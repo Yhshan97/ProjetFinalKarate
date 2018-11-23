@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<script>
+</script>
+<head>
+    <meta charset="UTF-8">
+    <title>Notre école</title>
+</head>
+<body>
+<br/><br/>
+<div class="container">
+    <div class="panel panel-default" th:each="role : ${listeRoles}">
+        <div class="panel-heading text-center">
+            <h3 th:text="${role.getNomRole()}"></h3>
+        </div>
+        <div class="panel-body" th:if="${!role.getComptes().isEmpty()}" th:each="compte : ${role.getComptes()}">
+            <div th:if="${!compte.isHonte()}">
+                <img th:src="${compte.getAvatar().getAvatar()}" th:height="80px"/>&nbsp;&nbsp;
+                <span style="font-size: 20px"><span th:text="${compte.getAlias()}"></span>,&nbsp;
+                <span th:text="'ceinture ' + ${compte.getGroupe().getNomGroupe()}"></span>, &nbsp;
+                    <span th:text="'utilisateur ' + ${compte.getCourriel()}"></span></span>
+            </div>
+        </div>
+        <div class="panel-body" th:unless="${!role.getComptes().isEmpty()}">
+            <br/>
+        </div>
+    </div>
+
+
+    <div class="panel panel-danger" >
+        <div class="panel-heading text-center">
+            <h3 th:text="'Section de la honte'"></h3>
+        </div>
+        <div class="panel-body">
+            <div th:each="compte : ${listeComptes}" th:if="${compte.isHonte()}" >
+                    <img th:src="${compte.getAvatar().getAvatar()}" th:height="80px"/>&nbsp;&nbsp;
+                    <span style="font-size: 20px"><span th:text="${compte.getAlias()}"></span>,&nbsp;
+                    <span th:text="'ceinture ' + ${compte.getGroupe().getNomGroupe()}"></span>, &nbsp;
+                    <span th:text="'utilisateur ' + ${compte.getCourriel()}"></span></span>
+            </div>
+        </div>
+    </div>
+
+    <br/>
+    <br/>
+    <a href="/" th:href="@{/}" class="btn btn-primary btn-block">Retour à la page d'accueil</a>
+</div>
+<div style="margin: 200px"></div>
+</body>
+</html>
