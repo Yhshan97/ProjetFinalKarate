@@ -1,0 +1,30 @@
+
+li p{ width: auto; margin-left: 60px}
+
+.radio .btn,
+.radio-inline .btn {
+    padding-left: 2em;
+    min-width: 7em;
+}
+
+.radio label,
+.radio-inline label {
+    text-align: left;
+    padding-left: 0.5em;
+}
+
+th {
+    text-align: center;
+}
+
+td {
+    vertical-align: middle!important;
+}
+
+.admissible{
+    background-color: chartreuse;
+}
+
+.enHonte{
+    background-color:lightcoral;
+}
