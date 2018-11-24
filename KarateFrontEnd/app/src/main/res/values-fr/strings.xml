@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="connection_open">Établir la connexion</string>
+    <string name="connection_close">Terminer la connexion</string>
+    <string name="fighter_info">Informations sur le combattant</string>
+    <string name="message_private">Message privé</string>
+    <string name="message_public">Message publique</string>
+    <string name="elsewhere">Ailleurs</string>
+    <string name="elsewhere_list">Ailleurs :</string>
+    <string name="spectator">Spéctateur</string>
+    <string name="spectator_list">Spéctateurs :</string>
+    <string name="waiting">Attente</string>
+    <string name="waiting_list">Attente :</string>
+    <string name="arbitrator">Arbitre</string>
+    <string name="arbitrator_list">Arbirtes :</string>
+    <string name="fight">Combattre</string>
+    <string name="fight_red">Combat rouge</string>
+    <string name="fight_white">Combat blanc</string>
+    <string name="fight_tie">Combat nul</string>
+    <string name="arbiter_red">Arbitrer rouge</string>
+    <string name="arbiter_red_fault">Arbitrer rouge avec faute</string>
+    <string name="exam_pass">Passer l\'examen</string>
+    <string name="exam_fail">Couler examen</string>
+    <string name="change_role">Changer role</string>
+</resources>
