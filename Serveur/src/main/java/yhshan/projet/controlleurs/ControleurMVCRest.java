@@ -64,20 +64,17 @@ public class ControleurMVCRest {
 
     @RequestMapping(value= "/login/{courriel}", method = RequestMethod.GET)
     public String login(@PathVariable("courriel") String courriel, HttpSession session){
-        String status = "OK";
 
-        if(!listeDesConnexions.containsValue(courriel)) listeDesConnexions.put(session.getId(), courriel);
-        else status = "ERREUR : L'utilisateur est déjà connecté !";
-
+        String str = listeDesConnexions.put(courriel, session.getId());
+        System.out.println(str);
         System.out.println(listeDesConnexions.toString());
-        return status;
+
+        return listeDesConnexions.put(courriel, session.getId()) == null  ? "Login OK" : "Remplacé";
     }
 
-    @RequestMapping(value= "/logout", method = RequestMethod.GET)
-    public String logout(HttpSession session){
-
-        listeDesConnexions.remove(session.getId());
-        return "Logout OK";
+    @RequestMapping(value= "/logout/{courriel}", method = RequestMethod.GET)
+    public String logout(@PathVariable("courriel") String courriel,HttpSession session){
+        return listeDesConnexions.remove(courriel,session.getId()) ? "Logout OK" : "Déjà logged out";
     }
 
     @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
