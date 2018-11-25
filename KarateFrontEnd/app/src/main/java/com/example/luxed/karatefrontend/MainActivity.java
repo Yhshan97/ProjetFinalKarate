@@ -31,7 +31,6 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
     private TextView tvErrorMessage;
     private Spinner spinFighters;
-    private ArrayAdapter<String> adapterFighters;
     private Button btnConnection;
 
     private ArrayList<Account> accounts = new ArrayList<>();
@@ -39,12 +38,14 @@ public class MainActivity extends AppCompatActivity {
 
     private String connectionId;
 
+    private OkHttpClient client;
+
     private void updateSpinFighters() {
         List<String> accEmails = new ArrayList<>();
         for (Account account : accounts)
             accEmails.add(account.getEmail());
 
-        adapterFighters = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, accEmails);
+        ArrayAdapter<String> adapterFighters = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, accEmails);
 
         spinFighters.setAdapter(adapterFighters);
     }
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         spinFighters = findViewById(R.id.spinFighters);
         btnConnection = findViewById(R.id.btnConnection);
 
-        OkHttpClient client = new OkHttpClient();
+        client = new OkHttpClient();
         Request request = new Request.Builder()
                 .url("http://10.0.2.2:8080/lstComptes")
                 .build();
@@ -100,8 +101,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnConnection.setOnClickListener(v -> {
-            OkHttpClient client1 = new OkHttpClient();
-
             if (btnConnection.getText() == getResources().getString(R.string.connection_open)) {
                 btnConnection.setText(R.string.connection_close);
                 spinFighters.setEnabled(false);
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                         .url("http://10.0.2.2:8080/login/" + getCurrentEmail())
                         .build();
 
-                client1.newCall(request1).enqueue(new Callback() {
+                client.newCall(request1).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Le compte n'a pas pu être connecté"));
@@ -118,13 +117,12 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-                        //Log.i("MainActivity", response.body().string());
-
                         String res = response.body().string();
 
                         MainActivity.this.runOnUiThread(() -> {
-                            tvErrorMessage.setText(res);
+                            //tvErrorMessage.setText(res);
                             current = getCurrent();
+                            current.setSessionId(res);
                         });
                     }
                 });
@@ -134,10 +132,10 @@ public class MainActivity extends AppCompatActivity {
                 spinFighters.setEnabled(true);
 
                 Request request1 = new Request.Builder()
-                        .url("http://10.0.2.2:8080/logout/" + getCurrentEmail())
+                        .url("http://10.0.2.2:8080/logout/" + current.getEmail())
                         .build();
 
-                client1.newCall(request1).enqueue(new Callback() {
+                client.newCall(request1).enqueue(new Callback() {
                     @Override
                     public void onFailure(Call call, IOException e) {
                         MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Le compte n'a pas pu être déconnecté"));

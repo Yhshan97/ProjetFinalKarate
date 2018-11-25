@@ -74,7 +74,6 @@ public class ControleurMVCRest {
 
     @RequestMapping(value= "/logout/{courriel}", method = RequestMethod.GET)
     public String logout(@PathVariable("courriel") String courriel,HttpSession session){
-        System.out.println(listeDesConnexions.toString());
         return listeDesConnexions.remove(courriel,session.getId()) ? "Logout OK" : "Déjà logged out";
     }
 

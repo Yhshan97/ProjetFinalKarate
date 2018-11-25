@@ -1,6 +1,8 @@
 package com.example.luxed.karatefrontend.Entities;
 
 public class Account {
+    private String sessionId;
+
     private String email;
     private String image;
 
@@ -28,5 +30,13 @@ public class Account {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String  getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }
