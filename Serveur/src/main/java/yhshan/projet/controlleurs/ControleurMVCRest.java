@@ -49,8 +49,6 @@ public class ControleurMVCRest {
     private Thread th;
 
 
-
-
     @Autowired
     public ControleurMVCRest(CompteDao compteDao, CombatDao combatDao, GroupeDao groupeDao, ExamenDao examenDao, RoleDao roleDao, SimpMessagingTemplate template) {
         this.compteDao = compteDao;
@@ -60,6 +58,7 @@ public class ControleurMVCRest {
         this.roleDao = roleDao;
         this.template = template;
     }
+
     static public Map<String, String> listeDesConnexions = new HashMap();
 
     @RequestMapping(value= "/login/{courriel}", method = RequestMethod.GET)
@@ -109,29 +108,22 @@ public class ControleurMVCRest {
     }
 
     @GetMapping("/")
-    String uid(HttpSession session, MonUserPrincipal user) {
-        try {
-            System.out.println(session.getId());
-            System.out.println(user.getUsername());
-        }catch (Exception e){
-        }
-        return session.getId();
+    int uid() {
+        return 0;
     }
 
     @RequestMapping(value="/combat1/{courriel}", method= RequestMethod.GET)
-    public Combat combat1(@PathVariable("courriel") String courriel){
+    public String combat1(@PathVariable("courriel") String courriel){
 
         Compte rouge = compteDao.getOne(courriel);
         Compte blanc = compteDao.getOne("s1@dojo");
         Compte arbitre = compteDao.getOne("v1@dojo");
 
         Long milli = new Date().getTime();
-
-        int pointsGagnant = getPointsBasedOnEcart(rouge.getGroupe().getId() - blanc.getGroupe().getId());
-
-        Combat combat = new Combat(milli,arbitre,rouge,blanc,rouge.getGroupe(),blanc.getGroupe(),1,0,pointsGagnant);
-
-        return combatDao.save(combat);
+        Combat combat = new Combat(milli,arbitre,rouge,blanc,rouge.getGroupe(),blanc.getGroupe(),1,0,10);
+        Combat combatRes = combatDao.save(combat);
+        System.out.println(combatRes.getId());
+        return "ok";
     }
 
     @RequestMapping(value="/combat2/{courriel}", method= RequestMethod.GET)
@@ -144,7 +136,6 @@ public class ControleurMVCRest {
     public String combat3(@PathVariable("courriel") String courriel){
         return "";
     }
-
 
     @MessageMapping("/publicmsg")
     @SendTo("/sujet/reponsepublique")
@@ -160,27 +151,7 @@ public class ControleurMVCRest {
         //return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
     }
 
-    private int getPointsBasedOnEcart(int ecart){
 
-        int points = 0;
-
-        switch(ecart){
-            case 0:points = 10; break;
-            case 1:points = 12; break;
-            case 2:points = 15; break;
-            case 3:points = 20; break;
-            case 4:points = 25; break;
-            case 5:points = 30; break;
-            case 6:points = 50; break;
-            case -1:points = 9; break;
-            case -2:points = 7; break;
-            case -3:points = 5; break;
-            case -4:points = 3; break;
-            case -5:points = 2; break;
-            case -6:points = 1; break;
-        }
-        return points;
-    }
 /*
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
     public String getAvatarUser(@PathVariable("id") String id){ return compteDao.getOne(id).getAvatar().getAvatar(); }
