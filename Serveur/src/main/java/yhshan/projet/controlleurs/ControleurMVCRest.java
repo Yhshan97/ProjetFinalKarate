@@ -1,17 +1,18 @@
 package yhshan.projet.controlleurs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.tomcat.websocket.WsSession;
+import org.omg.CORBA.Request;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import yhshan.projet.CompteSerializer;
 import yhshan.projet.Message;
 import yhshan.projet.Reponse;
@@ -22,6 +23,8 @@ import yhshan.projet.entites.Compte;
 import yhshan.projet.entites.Examen;
 import yhshan.projet.entites.Groupe;
 
+import javax.servlet.http.HttpSession;
+import javax.websocket.Session;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +60,8 @@ public class ControleurMVCRest {
 
     private Thread th;
 
+
+
     @Autowired
     public ControleurMVCRest(CompteDao compteDao, CombatDao combatDao, GroupeDao groupeDao, ExamenDao examenDao, RoleDao roleDao, SimpMessagingTemplate template) {
         this.compteDao = compteDao;
@@ -67,16 +72,60 @@ public class ControleurMVCRest {
         this.template = template;
     }
 
-    @RequestMapping(value= "/login/{courriel}", method = RequestMethod.GET)
-    public String login(@PathVariable("courriel") String courriel){
-
-
+    @RequestMapping(value= "/login", method = RequestMethod.POST)
+    public String login(@RequestBody String str){
         return "";
     }
 
+
     @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
-    public List<Compte> listeComptes(){
-        return compteDao.findAll();
+    public List<String> listeComptes(){
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Compte.class, new CompteSerializer());
+        mapper.registerModule(module);
+
+        List<String> listeComptesJSON = new ArrayList<>();
+        for (Compte user: compteDao.findAll()) {
+            try {
+                listeComptesJSON.add(mapper.writeValueAsString(user));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return listeComptesJSON;
+    }
+
+    @GetMapping("/")
+    String uid(HttpSession session, MonUserPrincipal user) {
+        try {
+            System.out.println(session.getId());
+            System.out.println(user.getUsername());
+        }catch (Exception e){
+        }
+        return session.getId();
+    }
+
+    @RequestMapping(value="/combat", method= RequestMethod.GET)
+    public String combat(){
+        return"";
+    }
+
+    @MessageMapping("/publicmsg")
+    @SendTo("/sujet/reponsepublique")
+    public Reponse publique(Message message) {
+        return new Reponse(message.getDe(), new Date().getTime(),"public");
+        //return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
+    }
+
+    @MessageMapping("/privatemsg")
+    @SendTo("/sujet/reponseprive")
+    public Reponse prive(Message message) {
+        return new Reponse(message.getDe(), new Date().getTime(),"privé");
+        //return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
     }
 
 
@@ -120,18 +169,6 @@ public class ControleurMVCRest {
         compteDao.transferrer(roleDao.getOne(compte.getRole().getIdRole() + 1),id);
     }
 
-
-    @MessageMapping("/publicmsg")
-    @SendTo("/sujet/reponsepublique")
-    public Reponse publique(Message message) {
-        return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
-    }
-
-    @MessageMapping("/privatemsg")
-    @SendTo("/sujet/reponseprive")
-    public Reponse prive(Message message) {
-        return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
-    }
 
     //@MessageMapping("/connectedToKumite")
     @SendTo("/sujet/connect")

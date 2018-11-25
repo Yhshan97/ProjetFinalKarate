@@ -22,14 +22,17 @@ public class CompteSerializer extends StdSerializer<Compte> {
     public void serialize(
             Compte value, JsonGenerator jgen, SerializerProvider provider)
             throws IOException, JsonProcessingException {
-/*
+
         jgen.writeStartObject();
-        jgen.writeStringField("courriel", value.getCourriel());
-        jgen.writeStringField("alias", value.getAlias());
+        jgen.writeStringField("courriel", value.getUsername());
+        jgen.writeStringField("fullName", value.getFullname());
         jgen.writeStringField("avatar", value.getAvatar().getAvatar());
-        jgen.writeStringField("role", value.getRole().getNomRole());
-        jgen.writeStringField("groupe", value.getGroupe().getNomGroupe());
-        jgen.writeStringField("position", value.getPosition());
-        jgen.writeEndObject();*/
-    }
+        jgen.writeStringField("role", value.getRole().getRole());
+        jgen.writeStringField("groupe", value.getGroupe().getGroupe());
+        jgen.writeNumberField("talent", value.getTalent());
+        jgen.writeNumberField("chouchou", value.getChouchou());
+        jgen.writeNumberField("ancienDepuis", value.getAnciendepuis());
+        jgen.writeNumberField("entrainement", value.getEntrainement());
+        jgen.writeEndObject();
+}
 }

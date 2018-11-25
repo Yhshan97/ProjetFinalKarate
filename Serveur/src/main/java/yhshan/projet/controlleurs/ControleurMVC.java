@@ -136,6 +136,8 @@ public class ControleurMVC {
         return "prive/grades";
     }
 
+    */
+
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(Map<String, Object> model) { return "public/login"; }
 
@@ -143,6 +145,5 @@ public class ControleurMVC {
     public String console(Map<String, Object> model) {
         return "consoleBD";
     }
-    */
 }
 
