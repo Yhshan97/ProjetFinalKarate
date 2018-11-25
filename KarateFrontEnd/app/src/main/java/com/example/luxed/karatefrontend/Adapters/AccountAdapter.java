@@ -42,9 +42,9 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.MyViewHo
     public void onBindViewHolder(MyViewHolder holder, int position) {
         Account acc = accounts.get(position);
 
-        //String photoData = acc.getImage().substring(acc.getImage().indexOf(',') + 1);
+        String imgData = acc.getImage().substring(acc.getImage().indexOf(',') + 1);
 
-        byte[] decodedString = Base64.decode(acc.getImage().getBytes(), Base64.URL_SAFE);
+        byte[] decodedString = Base64.decode(imgData.getBytes(), Base64.DEFAULT);
         Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
         holder.image.setImageBitmap(decodedByte);
