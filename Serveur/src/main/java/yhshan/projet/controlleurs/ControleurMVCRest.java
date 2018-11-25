@@ -79,15 +79,15 @@ public class ControleurMVCRest {
 
 
     @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
-    public List<String> listeComptes(){
+    public String listeComptes(){
 
         ObjectMapper mapper = new ObjectMapper();
-
         SimpleModule module = new SimpleModule();
         module.addSerializer(Compte.class, new CompteSerializer());
         mapper.registerModule(module);
 
-        List<String> listeComptesJSON = new ArrayList<>();
+
+        List<String> listeComptesJSON   =  new ArrayList<>();
         for (Compte user: compteDao.findAll()) {
             try {
                 listeComptesJSON.add(mapper.writeValueAsString(user));
@@ -95,8 +95,7 @@ public class ControleurMVCRest {
                 e.printStackTrace();
             }
         }
-
-        return listeComptesJSON;
+        return "[" + String.join(",",listeComptesJSON) + "]";
     }
 
     @GetMapping("/")
