@@ -48,9 +48,9 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call call, Response response) throws IOException {
                 tvErrorMessage.setText(R.string.ok);
                 try {
-                    Log.i("MainActivity", response.body().string());
-                    JSONObject jsonObject = new JSONObject(response.body().string());
                     //Log.i("MainActivity", response.body().string());
+                    JSONObject jsonObject = new JSONObject(response.body().string());
+                    Log.i("MainActivity", "" + jsonObject.getJSONArray("comptes").length());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
