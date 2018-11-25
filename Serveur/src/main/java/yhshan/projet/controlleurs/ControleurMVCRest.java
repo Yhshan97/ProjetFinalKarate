@@ -69,11 +69,12 @@ public class ControleurMVCRest {
         System.out.println(str);
         System.out.println(listeDesConnexions.toString());
 
-        return listeDesConnexions.put(courriel, session.getId()) == null  ? "Login OK" : "Remplacé";
+        return str == null  ? "Login OK" : "Remplacé";
     }
 
     @RequestMapping(value= "/logout/{courriel}", method = RequestMethod.GET)
     public String logout(@PathVariable("courriel") String courriel,HttpSession session){
+        System.out.println(listeDesConnexions.toString());
         return listeDesConnexions.remove(courriel,session.getId()) ? "Logout OK" : "Déjà logged out";
     }
 

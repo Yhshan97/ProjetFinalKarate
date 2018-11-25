@@ -72,19 +72,26 @@
 
     <TextView
         android:id="@+id/tvPrivateMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/message_private"
+        app:layout_constraintBottom_toTopOf="@+id/checkBox"
+        app:layout_constraintEnd_toStartOf="@+id/btnPublicMessage"
         app:layout_constraintStart_toStartOf="@+id/btnPrivateMessage"
         app:layout_constraintTop_toBottomOf="@+id/btnPrivateMessage" />
 
     <TextView
         android:id="@+id/tvPublicMessage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:text="@string/message_public"
+        app:layout_constraintBottom_toTopOf="@+id/checkBox"
+        app:layout_constraintEnd_toEndOf="@+id/btnPublicMessage"
         app:layout_constraintStart_toStartOf="@+id/btnPublicMessage"
         app:layout_constraintTop_toBottomOf="@+id/btnPublicMessage" />
 
