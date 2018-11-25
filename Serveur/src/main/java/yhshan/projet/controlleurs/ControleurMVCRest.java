@@ -3,15 +3,10 @@ package yhshan.projet.controlleurs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.apache.tomcat.websocket.WsSession;
-import org.omg.CORBA.Request;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import yhshan.projet.CompteSerializer;
 import yhshan.projet.Message;
@@ -20,17 +15,10 @@ import yhshan.projet.configurations.MonUserPrincipal;
 import yhshan.projet.dao.*;
 import yhshan.projet.entites.Combat;
 import yhshan.projet.entites.Compte;
-import yhshan.projet.entites.Examen;
-import yhshan.projet.entites.Groupe;
 
 import javax.servlet.http.HttpSession;
-import javax.websocket.Session;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
-import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;
 
 @RestController
@@ -62,6 +50,7 @@ public class ControleurMVCRest {
 
 
 
+
     @Autowired
     public ControleurMVCRest(CompteDao compteDao, CombatDao combatDao, GroupeDao groupeDao, ExamenDao examenDao, RoleDao roleDao, SimpMessagingTemplate template) {
         this.compteDao = compteDao;
@@ -71,12 +60,25 @@ public class ControleurMVCRest {
         this.roleDao = roleDao;
         this.template = template;
     }
+    static public Map<String, String> listeDesConnexions = new HashMap();
 
-    @RequestMapping(value= "/login", method = RequestMethod.POST)
-    public String login(@RequestBody String str){
-        return "";
+    @RequestMapping(value= "/login/{courriel}", method = RequestMethod.GET)
+    public String login(@PathVariable("courriel") String courriel, HttpSession session){
+        String status = "OK";
+
+        if(!listeDesConnexions.containsValue(courriel)) listeDesConnexions.put(session.getId(), courriel);
+        else status = "ERREUR : L'utilisateur est déjà connecté !";
+
+        System.out.println(listeDesConnexions.toString());
+        return status;
     }
 
+    @RequestMapping(value= "/logout", method = RequestMethod.GET)
+    public String logout(HttpSession session){
+
+        listeDesConnexions.remove(session.getId());
+        return "Logout OK";
+    }
 
     @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
     public String listeComptes(){
@@ -85,7 +87,6 @@ public class ControleurMVCRest {
         SimpleModule module = new SimpleModule();
         module.addSerializer(Compte.class, new CompteSerializer());
         mapper.registerModule(module);
-
 
         List<String> listeComptesJSON   =  new ArrayList<>();
         for (Compte user: compteDao.findAll()) {
@@ -108,10 +109,33 @@ public class ControleurMVCRest {
         return session.getId();
     }
 
-    @RequestMapping(value="/combat", method= RequestMethod.GET)
-    public String combat(){
-        return"";
+    @RequestMapping(value="/combat1/{courriel}", method= RequestMethod.GET)
+    public Combat combat1(@PathVariable("courriel") String courriel){
+
+        Compte rouge = compteDao.getOne(courriel);
+        Compte blanc = compteDao.getOne("s1@dojo");
+        Compte arbitre = compteDao.getOne("v1@dojo");
+
+        Long milli = new Date().getTime();
+
+        int pointsGagnant = getPointsBasedOnEcart(rouge.getGroupe().getId() - blanc.getGroupe().getId());
+
+        Combat combat = new Combat(milli,arbitre,rouge,blanc,rouge.getGroupe(),blanc.getGroupe(),1,0,pointsGagnant);
+
+        return combatDao.save(combat);
     }
+
+    @RequestMapping(value="/combat2/{courriel}", method= RequestMethod.GET)
+    public String combat2(@PathVariable("courriel") String courriel){
+
+        return "";
+    }
+
+    @RequestMapping(value="/combat3/{courriel}", method= RequestMethod.GET)
+    public String combat3(@PathVariable("courriel") String courriel){
+        return "";
+    }
+
 
     @MessageMapping("/publicmsg")
     @SendTo("/sujet/reponsepublique")
@@ -127,7 +151,27 @@ public class ControleurMVCRest {
         //return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
     }
 
+    private int getPointsBasedOnEcart(int ecart){
 
+        int points = 0;
+
+        switch(ecart){
+            case 0:points = 10; break;
+            case 1:points = 12; break;
+            case 2:points = 15; break;
+            case 3:points = 20; break;
+            case 4:points = 25; break;
+            case 5:points = 30; break;
+            case 6:points = 50; break;
+            case -1:points = 9; break;
+            case -2:points = 7; break;
+            case -3:points = 5; break;
+            case -4:points = 3; break;
+            case -5:points = 2; break;
+            case -6:points = 1; break;
+        }
+        return points;
+    }
 /*
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
     public String getAvatarUser(@PathVariable("id") String id){ return compteDao.getOne(id).getAvatar().getAvatar(); }
@@ -517,28 +561,8 @@ public class ControleurMVCRest {
         }
     }
 
+*/
 
-    private int getPointsBasedOnEcart(int ecart){
 
-        int points = 0;
 
-        switch(ecart){
-             case 0:points = 10; break;
-             case 1:points = 12; break;
-             case 2:points = 15; break;
-             case 3:points = 20; break;
-             case 4:points = 25; break;
-             case 5:points = 30; break;
-             case 6:points = 50; break;
-            case -1:points = 9; break;
-            case -2:points = 7; break;
-            case -3:points = 5; break;
-            case -4:points = 3; break;
-            case -5:points = 2; break;
-            case -6:points = 1; break;
-        }
-        return points;
-    }
-
-    */
 }
