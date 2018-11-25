@@ -96,7 +96,7 @@ public class ControleurMVCRest {
                 e.printStackTrace();
             }
         }
-        return "[" + String.join(",",listeComptesJSON) + "]";
+        return "{ comptes : [" + String.join(",",listeComptesJSON) + "] }";
     }
 
     @GetMapping("/")

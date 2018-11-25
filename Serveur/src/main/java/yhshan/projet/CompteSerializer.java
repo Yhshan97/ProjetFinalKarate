@@ -26,7 +26,7 @@ public class CompteSerializer extends StdSerializer<Compte> {
         jgen.writeStartObject();
         jgen.writeStringField("courriel", value.getUsername());
         jgen.writeStringField("fullName", value.getFullname());
-        jgen.writeStringField("avatar", value.getAvatar().getAvatar());
+        //jgen.writeStringField("avatar", value.getAvatar().getAvatar());
         jgen.writeStringField("role", value.getRole().getRole());
         jgen.writeStringField("groupe", value.getGroupe().getGroupe());
         jgen.writeNumberField("talent", value.getTalent());
