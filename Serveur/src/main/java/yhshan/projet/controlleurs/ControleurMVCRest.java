@@ -182,12 +182,14 @@ public class ControleurMVCRest {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
-            Combat combatRes = combatDao.save(combat);
-            //this.template.convertAndSend("/destination",listeComptes());
-            return "ok";
+            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+                Long milli = new Date().getTime();
+                Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
+                combatDao.save(combat);
+                this.template.convertAndSend("/MAJCompte",listeComptes());
+                return "ok";
+            }
+            else return "Pas en attente";
         }
         else
             return "refusé";
@@ -199,12 +201,14 @@ public class ControleurMVCRest {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 10, 0);
-            Combat combatRes = combatDao.save(combat);
-            //this.template.convertAndSend("",listeComptes());
-            return "ok";
+            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+                Long milli = new Date().getTime();
+                Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 10, 0);
+                combatDao.save(combat);
+                this.template.convertAndSend("/MAJCompte",listeComptes());
+                return "ok";
+            }
+            else return "Pas en attente";
         }
         else
             return "refusé";
@@ -216,16 +220,21 @@ public class ControleurMVCRest {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 5, 5);
-            Combat combatRes = combatDao.save(combat);
-            //this.template.convertAndSend("",listeComptes());
-            return "ok";
+            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+                Long milli = new Date().getTime();
+                Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 5, 5);
+                combatDao.save(combat);
+                this.template.convertAndSend("/MAJCompte",listeComptes());
+                return "ok";
+            }
+            else return "Pas en attente";
         }
         else
             return "refusé";
     }
+
+
+
 
 /*
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
