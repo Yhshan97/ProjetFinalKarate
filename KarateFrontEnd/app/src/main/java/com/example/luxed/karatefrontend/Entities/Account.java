@@ -18,6 +18,7 @@ public class Account {
     }
 
     public Account() {
+        this.sessionId = "";
         this.email = "";
         this.avatar = "";
     }

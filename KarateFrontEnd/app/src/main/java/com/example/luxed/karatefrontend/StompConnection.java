@@ -66,11 +66,13 @@ public class StompConnection {
     }
 
     public void sendMessagePrivate(Account acc) {
-        sendMessage("/app/privatemsg", "{ \"de\": \"" + acc.getEmail() + "\", \"creationTemps\": 0, \"contenu\": \"\" }");
+        if (acc != null)
+            sendMessage("/app/privatemsg", "{ \"de\": \"" + acc.getEmail() + "\", \"session\": \"" + acc.getSessionId() + "\", \"creationTemps\": 0, \"contenu\": \"\" }");
     }
 
     public void sendMessagePublic(Account acc) {
-        sendMessage("/app/publicmsg", "{ \"de\": \"" + acc.getEmail() + "\", \"creationTemps\": 0, \"contenu\": \"\" }");
+        if (acc != null)
+            sendMessage("/app/publicmsg", "{ \"de\": \"" + acc.getEmail() + "\", \"session\": \"" + acc.getSessionId() + "\", \"creationTemps\": 0, \"contenu\": \"\" }");
     }
 
     public void sendFight(FightType type) {

@@ -33,6 +33,8 @@ public class CompteSerializer extends StdSerializer<Compte> {
         jgen.writeNumberField("chouchou", value.getChouchou());
         jgen.writeNumberField("ancienDepuis", value.getAnciendepuis());
         jgen.writeNumberField("entrainement", value.getEntrainement());
+        jgen.writeNumberField("points", value.calculPoints());
+        jgen.writeNumberField("credits", value.calculCredits());
         jgen.writeEndObject();
 
     }

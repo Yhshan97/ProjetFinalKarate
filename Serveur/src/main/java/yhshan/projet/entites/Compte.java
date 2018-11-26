@@ -236,4 +236,32 @@ public class Compte implements UserDetails {
                 ", password='" + password + '\'' +
                 '}';
     }
+
+    public int calculPoints(){
+        int ptsCourant = 0;
+        Set<Combat> lst = blancs;
+        for (Combat comb: lst) {
+            if(comb.getCeintureBlanc() == groupe)
+                ptsCourant += comb.getPointsBlanc();
+        }
+        lst = rouges;
+        for (Combat comb: lst) {
+            if(comb.getCeintureRouge() == groupe)
+                ptsCourant += comb.getPointsRouge();
+        }
+
+        return ptsCourant;
+    }
+
+    public int calculCredits(){
+
+        int credits = 0;
+        Set<Combat> lst = arbitres;
+        for (Combat comb: lst) {
+            credits += comb.getCreditsArbitre();
+        }
+
+        return credits;
+    }
+
 }

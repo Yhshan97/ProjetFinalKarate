@@ -200,9 +200,11 @@ public class MainActivity extends AppCompatActivity {
 
         stompConnection.subReponsePrive(stompMessage -> {
             Log.i("StompPrive", stompMessage.getPayload());
-            JSONObject rep = new JSONObject(stompMessage.getPayload());
-            Date creation = new Date(rep.getLong("creationTemps"));
-            tvMessagePrivate.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
+            if (current != null) {
+                JSONObject rep = new JSONObject(stompMessage.getPayload());
+                Date creation = new Date(rep.getLong("creationTemps"));
+                tvMessagePrivate.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
+            }
         });
         stompConnection.subReponsePublique(stompMessage -> {
             Log.i("StompPublic", stompMessage.getPayload());
