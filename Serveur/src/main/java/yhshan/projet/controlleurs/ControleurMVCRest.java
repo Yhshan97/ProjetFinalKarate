@@ -63,6 +63,25 @@ public class ControleurMVCRest {
         this.template = template;
     }
 
+    @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
+    public String listeComptes(){
+
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Compte.class, new CompteSerializer());
+        mapper.registerModule(module);
+
+        List<String> listeComptesJSON   =  new ArrayList<>();
+        for (Compte user: compteDao.findAll()) {
+            try {
+                listeComptesJSON.add(mapper.writeValueAsString(user));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+        }
+        return "{ comptes : [" + String.join(",",listeComptesJSON) + "] }";
+    }
+
     @RequestMapping(value= "/login/{courriel}", method = RequestMethod.GET)
     public String login(@PathVariable("courriel") String courriel, HttpSession session){
 
@@ -83,6 +102,7 @@ public class ControleurMVCRest {
                 if(listeDesConnexions.get(key).equals(sessionId)) {
                     listeDesConnexions.remove(key);
                     logout=true;
+                    break;
                 }
             }
         }
@@ -90,28 +110,35 @@ public class ControleurMVCRest {
         return logout ? "Logout OK" : "Déjà logged out";
     }
 
-    @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
-    public String listeComptes(){
-
-        ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Compte.class, new CompteSerializer());
-        mapper.registerModule(module);
-
-        List<String> listeComptesJSON   =  new ArrayList<>();
-        for (Compte user: compteDao.findAll()) {
-            try {
-                listeComptesJSON.add(mapper.writeValueAsString(user));
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        }
-        return "{ comptes : [" + String.join(",",listeComptesJSON) + "] }";
-    }
-
     @GetMapping("/")
     int uid() {
+        System.out.println(listeDesConnexions.get(""));
         return 0;
+    }
+
+    @MessageMapping("/publicmsg")
+    @SendTo("/sujet/reponsepublique")
+    public Reponse publique(Message message) {
+        Compte sender = compteDao.getOne(message.getDe());
+
+        if(listeDesConnexions.get(message.getDe()) != null && sender != null){
+            return sender.getRole().getId() > 1 && listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
+                    new Reponse(message.getDe(), new Date().getTime(),"public") : null;
+        }
+        else return null;
+    }
+
+    @MessageMapping("/privatemsg")
+    @SendTo("/sujet/reponseprive")
+    public Reponse prive(Message message) {
+        //return new Reponse(message.getDe(), new Date().getTime(),"privé");
+
+        if(listeDesConnexions.get(message.getDe()) != null){
+            return listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
+                    new Reponse(message.getDe(), new Date().getTime(),"privé") : null;
+        }
+
+        return null;
     }
 
     @RequestMapping(value="/combat1/{courriel}/{session}", method= RequestMethod.GET)
@@ -164,26 +191,6 @@ public class ControleurMVCRest {
         else
             return "refusé";
     }
-
-    @MessageMapping("/publicmsg")
-    @SendTo("/sujet/reponsepublique")
-    public Reponse publique(Message message) {
-        Compte sender = compteDao.getOne(message.getDe());
-
-        return sender.getRole().getId() > 1  &&
-                listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
-                new Reponse(message.getDe(), new Date().getTime(),"public") : null;
-    }
-
-    @MessageMapping("/privatemsg")
-    @SendTo("/sujet/reponseprive")
-    public Reponse prive(Message message) {
-        //return new Reponse(message.getDe(), new Date().getTime(),"privé");
-
-        return listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
-                new Reponse(message.getDe(), new Date().getTime(),"privé") : null;
-    }
-
 
 /*
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
