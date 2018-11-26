@@ -186,7 +186,7 @@ public class ControleurMVCRest {
                 Long milli = new Date().getTime();
                 Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
                 combatDao.save(combat);
-                this.template.convertAndSend("/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
                 return "ok";
             }
             else return "Pas en attente";
@@ -205,7 +205,7 @@ public class ControleurMVCRest {
                 Long milli = new Date().getTime();
                 Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 10, 0);
                 combatDao.save(combat);
-                this.template.convertAndSend("/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
                 return "ok";
             }
             else return "Pas en attente";
@@ -224,7 +224,7 @@ public class ControleurMVCRest {
                 Long milli = new Date().getTime();
                 Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 5, 5);
                 combatDao.save(combat);
-                this.template.convertAndSend("/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
                 return "ok";
             }
             else return "Pas en attente";

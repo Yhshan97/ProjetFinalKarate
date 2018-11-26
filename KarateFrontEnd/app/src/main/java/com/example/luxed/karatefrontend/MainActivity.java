@@ -89,6 +89,38 @@ public class MainActivity extends AppCompatActivity {
         return getCurrent().getEmail();
     }
 
+    private void updateAccountList(JSONObject jsonObject, boolean updateCurrent) throws JSONException {
+        JSONArray arrComptes = jsonObject.getJSONArray("comptes");
+
+        for (int i = 0; i < arrComptes.length(); i++) {
+            JSONObject obj = arrComptes.getJSONObject(i);
+            Account acc = new Account(
+                    obj.getString("courriel"),
+                    obj.getString("fullName"),
+                    obj.getString("avatar"),
+                    obj.getString("role"),
+                    obj.getString("groupe"),
+                    obj.getInt("points"),
+                    obj.getInt("credits"));
+
+            if (updateCurrent && acc.getEmail().equals(current.getEmail())) {
+                String sessionId = current.getSessionId();
+                Log.i("UpdateCurrent", "Current: " + current.getCredits());
+                current = acc;
+                current.setSessionId(sessionId);
+                Log.i("UpdateCurrent", "Current: " + acc.getCredits());
+            }
+
+            accounts.put(acc.getEmail(), acc);
+        }
+    }
+
+    private void updateInfoFighter() {
+        Log.i("UpdateInfo", "Info update");
+        tvInfosFighter.setText(current.getFullName() + ", " + current.getGroupe() + ", " + current.getRole() +
+                ", points: " + current.getPoints() + ", credits: " + current.getCredits());
+    }
+
     private void updateRecyclerViews() {
         lstArbiters.clear();
         lstElsewhere.clear();
@@ -209,19 +241,7 @@ public class MainActivity extends AppCompatActivity {
                 tvErrorMessage.setText(R.string.ok);
                 try {
                     JSONObject jsonObject = new JSONObject(response.body().string());
-                    JSONArray arrComptes = jsonObject.getJSONArray("comptes");
-
-                    for (int i = 0; i < arrComptes.length(); i++) {
-                        JSONObject obj = arrComptes.getJSONObject(i);
-                        Account acc = new Account(
-                                obj.getString("courriel"),
-                                obj.getString("fullName"),
-                                obj.getString("avatar"),
-                                obj.getString("role"),
-                                obj.getString("groupe"));
-                        //accounts.add(acc);
-                        accounts.put(acc.getEmail(), acc);
-                    }
+                    updateAccountList(jsonObject, false);
 
                     MainActivity.this.runOnUiThread(() -> {
                         updateSpinFighters();
@@ -258,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                             current = getCurrent();
                             current.setSessionId(res);
 
-                            tvInfosFighter.setText(current.getFullName() + ", " + current.getGroupe() + ", " + current.getRole());
+                            updateInfoFighter();
                         });
                     }
                 });
@@ -305,6 +325,20 @@ public class MainActivity extends AppCompatActivity {
             Date creation = new Date(rep.getLong("creationTemps"));
             tvMessagePublic.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
         });
+        stompConnection.subMAJCompte(stompMessage -> {
+            try {
+                JSONObject jsonObject = new JSONObject(stompMessage.getPayload());
+                updateAccountList(jsonObject, true);
+
+                MainActivity.this.runOnUiThread(() -> {
+                    updateSpinFighters();
+                    updateRecyclerViews();
+                    updateInfoFighter();
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
 
         // Message privé
         btnMessagePrivate.setOnClickListener(v -> stompConnection.sendMessagePrivate(current));
@@ -340,11 +374,68 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Combat rouge
-        btnFightRed.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.Red));
+        btnFightRed.setOnClickListener(v -> {
+            Request request1 = new Request.Builder()
+                    .url("http://10.0.2.2:8080/combat1/" + current.getEmail() + "/" + current.getSessionId())
+                    .build();
+
+            client.newCall(request1).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat rouge impossible"));
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String res = response.body().string();
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+
+                    // Refresh liste
+                }
+            });
+        });
         // Combat blanc
-        btnFightWhite.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.White));
+        btnFightWhite.setOnClickListener(v -> {
+            Request request1 = new Request.Builder()
+                    .url("http://10.0.2.2:8080/combat2/" + current.getEmail() + "/" + current.getSessionId())
+                    .build();
+
+            client.newCall(request1).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible"));
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String res = response.body().string();
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+
+                    // Refresh liste
+                }
+            });
+        });
         // Combat nul
-        btnFightTie.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.Tie));
+        btnFightTie.setOnClickListener(v -> {
+            Request request1 = new Request.Builder()
+                    .url("http://10.0.2.2:8080/combat3/" + current.getEmail() + "/" + current.getSessionId())
+                    .build();
+
+            client.newCall(request1).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible"));
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String res = response.body().string();
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+
+                    // Refresh liste
+                }
+            });
+        });
         // Arbitre rouge
         btnArbiterRed.setOnClickListener(v -> stompConnection.sendArbiterRed());
         // Arbitre rouge avec faute

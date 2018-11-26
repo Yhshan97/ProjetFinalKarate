@@ -8,13 +8,18 @@ public class Account {
     private String avatar;
     private String role;
     private String groupe;
+    private int points;
+    private int credits;
 
-    public Account(String email, String fullName, String avatar, String role, String groupe) {
+    public Account(String email, String fullName, String avatar, String role, String groupe,
+                   int points, int credits) {
         this.email = email;
         this.fullName = fullName;
         this.avatar = avatar;
         this.role = role;
         this.groupe = groupe;
+        this.points = points;
+        this.credits = credits;
     }
 
     public Account() {
@@ -27,16 +32,8 @@ public class Account {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getAvatar() {
         return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
     }
 
     public String  getSessionId() {
@@ -58,4 +55,8 @@ public class Account {
     public String getGroupe() {
         return groupe;
     }
+
+    public int getPoints() { return points; }
+
+    public int getCredits() { return credits; }
 }

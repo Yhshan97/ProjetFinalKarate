@@ -64,6 +64,10 @@ public class StompConnection {
         subTopic("/sujet/lstLieux", event);
     }
 
+    public void subMAJCompte(Consumer<StompMessage> event) {
+        subTopic("/sujet/MAJCompte", event);
+    }
+
     public void sendMessage(String destination, String message) {
         Log.i("STOMP", "Sending message to " + destination);
         client.send(destination, message).subscribe();
