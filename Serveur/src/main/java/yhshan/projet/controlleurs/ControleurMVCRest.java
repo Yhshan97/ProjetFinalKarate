@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import yhshan.projet.CompteSerializer;
+import yhshan.projet.LieuxMessage;
 import yhshan.projet.Message;
 import yhshan.projet.Reponse;
 import yhshan.projet.configurations.MonUserPrincipal;
@@ -43,6 +44,8 @@ public class ControleurMVCRest {
     private List<Compte> lstAttente = new ArrayList<>();
 
     static public Map<String, String> listeDesConnexions = new HashMap();
+
+    LinkedHashMap<String,String> lstPositions = new LinkedHashMap();
 
     private Compte compteGauche,compteDroite,compteArbitre;
 
@@ -88,7 +91,7 @@ public class ControleurMVCRest {
         String str = listeDesConnexions.put(courriel, session.getId());
         System.out.println(str);
         System.out.println(listeDesConnexions.toString());
-
+        lstPositions.put(courriel,"ailleurs");
         return session.getId();
     }
 
@@ -101,6 +104,7 @@ public class ControleurMVCRest {
                 System.out.println(key);
                 if(listeDesConnexions.get(key).equals(sessionId)) {
                     listeDesConnexions.remove(key);
+                    lstPositions.remove(key);
                     logout=true;
                     break;
                 }
@@ -111,9 +115,9 @@ public class ControleurMVCRest {
     }
 
     @GetMapping("/")
-    int uid() {
-        System.out.println(listeDesConnexions.get(""));
-        return 0;
+    HashMap<String,String> uid() {
+        System.out.println(lstPositions.toString());
+        return null;
     }
 
     @MessageMapping("/publicmsg")
@@ -139,6 +143,30 @@ public class ControleurMVCRest {
         }
 
         return null;
+    }
+
+    @MessageMapping("/lieux")
+    @SendTo("/sujet/lstLieux")
+    public HashMap<String,String> lieux(LieuxMessage message) {
+
+        String courriel = message.getCourriel();
+        String session = message.getSession();
+        String position = message.getPosition();
+        boolean arbitre = message.isArbitre();
+
+        if(position.equals("attente") && arbitre)
+            position = "arbitre";
+
+        if(listeDesConnexions.get(courriel) == null)
+            return null;
+
+        else if(listeDesConnexions.get(courriel).equals(session))
+            lstPositions.put(courriel,position);
+
+        else  //La session est différente
+            return null;
+
+        return lstPositions;
     }
 
     @RequestMapping(value="/combat1/{courriel}/{session}", method= RequestMethod.GET)
