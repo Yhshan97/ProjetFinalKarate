@@ -16,7 +16,6 @@ import yhshan.projet.configurations.MonUserPrincipal;
 import yhshan.projet.dao.*;
 import yhshan.projet.entites.Combat;
 import yhshan.projet.entites.Compte;
-import yhshan.projet.entites.Examen;
 
 import javax.servlet.http.HttpSession;
 import java.util.*;
@@ -83,6 +82,7 @@ public class ControleurMVCRest {
                 e.printStackTrace();
             }
         }
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
         return "{ comptes : [" + String.join(",",listeComptesJSON) + "] }";
     }
 
@@ -93,6 +93,9 @@ public class ControleurMVCRest {
         System.out.println(str);
         System.out.println(listeDesConnexions.toString());
         lstPositions.put(courriel,"ailleurs");
+
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
+
         return session.getId();
     }
 
@@ -104,6 +107,7 @@ public class ControleurMVCRest {
             for (String key: listeDesConnexions.keySet()) {
                 System.out.println(key);
                 if(listeDesConnexions.get(key).equals(sessionId)) {
+                    System.out.println("yes");
                     listeDesConnexions.remove(key);
                     lstPositions.remove(key);
                     logout=true;
@@ -111,6 +115,8 @@ public class ControleurMVCRest {
                 }
             }
         }
+
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
 
         return logout ? "Logout OK" : "Déjà logged out";
     }
@@ -176,12 +182,14 @@ public class ControleurMVCRest {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
-            combatDao.save(combat);
-            //this.template.convertAndSend("/destination",listeComptes());
-            return "ok";
+            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+                Long milli = new Date().getTime();
+                Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
+                combatDao.save(combat);
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                return "ok";
+            }
+            else return "Pas en attente";
         }
         else
             return "refusé";
@@ -193,12 +201,14 @@ public class ControleurMVCRest {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 10, 0);
-            combatDao.save(combat);
-            //this.template.convertAndSend("",listeComptes());
-            return "ok";
+            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+                Long milli = new Date().getTime();
+                Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 10, 0);
+                combatDao.save(combat);
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                return "ok";
+            }
+            else return "Pas en attente";
         }
         else
             return "refusé";
@@ -210,75 +220,23 @@ public class ControleurMVCRest {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 5, 5);
-            combatDao.save(combat);
-            //this.template.convertAndSend("",listeComptes());
-            return "ok";
-        }
-        else
-            return "refusé";
-    }
-
-    @RequestMapping(value="/arbitrer1/{courriel}/{session}", method= RequestMethod.GET)
-    public String arbitrer1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
-            Compte rouge = compteDao.getOne("v1@dojo");
-            Compte blanc = compteDao.getOne("s1@dojo");
-            Compte arbitre = compteDao.getOne(courriel);
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
-            combatDao.save(combat);
-            //this.template.convertAndSend("",listeComptes());
-            return "ok";
-        }
-        else
-            return "refusé";
-    }
-
-    @RequestMapping(value="/arbitrer2/{courriel}/{session}", method= RequestMethod.GET)
-    public String arbitrer2(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
-            Compte rouge = compteDao.getOne("v1@dojo");
-            Compte blanc = compteDao.getOne("s1@dojo");
-            Compte arbitre = compteDao.getOne(courriel);
-
-            Long milli = new Date().getTime();
-            Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 0, 10, 10);
-            combatDao.save(combat);
-            //this.template.convertAndSend("",listeComptes());
-            return "ok";
-        }
-        else
-            return "refusé";
-    }
-
-    @RequestMapping(value="/examen1/{courriel}/{session}", method= RequestMethod.GET)
-    public String examen1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
-            Compte compteCourant = compteDao.getOne(courriel);
-            Compte evaluateur = compteDao.getOne("v1@dojo");
-
-            if(compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {
+            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
                 Long milli = new Date().getTime();
-                Examen exam = new Examen(milli,true,compteCourant.getGroupe(),evaluateur,compteCourant);
-                compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
-                examenDao.save(exam);
-                compteDao.save(compteCourant);
-
-                //this.template.convertAndSend("/MAJCompte",listeComptes());
+                Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 5, 5);
+                combatDao.save(combat);
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
                 return "ok";
             }
-            else return "Pas assez de points ou de crédits / Ceinture la plus haute";
+            else return "Pas en attente";
         }
         else
             return "refusé";
     }
 
 
-    /*
+
+
+/*
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
     public String getAvatarUser(@PathVariable("id") String id){ return compteDao.getOne(id).getAvatar().getAvatar(); }
 

@@ -60,6 +60,14 @@ public class StompConnection {
         subTopic("/sujet/reponseprive", event);
     }
 
+    public void subChangePlace(Consumer<StompMessage> event) {
+        subTopic("/sujet/lstLieux", event);
+    }
+
+    public void subMAJCompte(Consumer<StompMessage> event) {
+        subTopic("/sujet/MAJCompte", event);
+    }
+
     public void sendMessage(String destination, String message) {
         Log.i("STOMP", "Sending message to " + destination);
         client.send(destination, message).subscribe();
@@ -73,6 +81,17 @@ public class StompConnection {
     public void sendMessagePublic(Account acc) {
         if (acc != null)
             sendMessage("/app/publicmsg", "{ \"de\": \"" + acc.getEmail() + "\", \"session\": \"" + acc.getSessionId() + "\", \"creationTemps\": 0, \"contenu\": \"\" }");
+    }
+
+    public void sendChangePlace(Account acc, String position, boolean arbitre) {
+        if (acc != null) {
+            sendMessage(
+                    "/app/lieux",
+                    "{ \"courriel\": \"" + acc.getEmail() + "\", " +
+                            "\"session\": \"" + acc.getSessionId() + "\", " +
+                            "\"position\": \"" + position + "\", " +
+                            "\"arbitre\": " + arbitre + " }");
+        }
     }
 
     public void sendFight(FightType type) {
@@ -91,6 +110,18 @@ public class StompConnection {
     }
 
     public void sendArbiterRedWithFault() {
+
+    }
+
+    public void sendPassExam() {
+
+    }
+
+    public void sendFailExam() {
+
+    }
+
+    public void sendChangeRole() {
 
     }
 }
