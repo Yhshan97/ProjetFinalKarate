@@ -93,4 +93,16 @@ public class StompConnection {
     public void sendArbiterRedWithFault() {
 
     }
+
+    public void sendPassExam() {
+
+    }
+
+    public void sendFailExam() {
+
+    }
+
+    public void sendChangeRole() {
+
+    }
 }

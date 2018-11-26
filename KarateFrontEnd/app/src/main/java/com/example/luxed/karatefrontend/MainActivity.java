@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -99,6 +101,9 @@ public class MainActivity extends AppCompatActivity {
         btnPassExam = findViewById(R.id.btnExamPass);
         btnFailExam = findViewById(R.id.btnExamFail);
         btnChangeRole = findViewById(R.id.btnChangeRole);
+        cbArbiter = findViewById(R.id.cbArbiter);
+
+        RadioGroup rgPlace = findViewById(R.id.rgPlace);
 
         client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -219,6 +224,29 @@ public class MainActivity extends AppCompatActivity {
         // Message publique
         btnMessagePublic.setOnClickListener(v -> stompConnection.sendMessagePublic(current));
 
+        // Place
+        rgPlace.setOnCheckedChangeListener((group, checkedId) -> {
+            switch (checkedId) {
+                case R.id.rbElsewhere:
+                    Log.i("MainActivity", "Elsewhere");
+                    break;
+                case R.id.rbSpectator:
+                    Log.i("MainActivity", "Spectator");
+                    break;
+                case R.id.rbWaiting:
+                    Log.i("MainActivity", "Waiting");
+                    break;
+            }
+        });
+
+        cbArbiter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                Log.i("MainActivity", "Arbitre");
+            } else {
+                Log.i("MainActivity", "Plus Arbitre");
+            }
+        });
+
         // Combat rouge
         btnFightRed.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.Red));
         // Combat blanc
@@ -229,5 +257,11 @@ public class MainActivity extends AppCompatActivity {
         btnArbiterRed.setOnClickListener(v -> stompConnection.sendArbiterRed());
         // Arbitre Rouge avec faute
         btnArbiterRedFault.setOnClickListener(v -> stompConnection.sendArbiterRedWithFault());
+        // Passer examen
+        btnPassExam.setOnClickListener(v -> stompConnection.sendPassExam());
+        // Fail exam
+        btnFailExam.setOnClickListener(v -> stompConnection.sendFailExam());
+        // Changer role
+        btnChangeRole.setOnClickListener(v -> stompConnection.sendChangeRole());
     }
 }
