@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -32,13 +33,32 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvErrorMessage;
     private Spinner spinFighters;
     private Button btnConnection;
+    private TextView tvInfosFighter;
+    private Button btnMessagePrivate;
+    private TextView tvMessagePrivate;
+    private Button btnMessagePublic;
+    private TextView tvMessagePublic;
+    private CheckBox cbArbiter;
+    private Button btnFightRed;
+    private Button btnFightWhite;
+    private Button btnFightTie;
+    private Button btnArbiterRed;
+    private Button btnArbiterRedFault;
+    private Button btnPassExam;
+    private Button btnFailExam;
+    private Button btnChangeRole;
 
     private ArrayList<Account> accounts = new ArrayList<>();
     private Account current;
+    private ArrayList<Account> lstArbiters = new ArrayList<>();
+    private ArrayList<Account> lstElsewhere = new ArrayList<>();
+    private ArrayList<Account> lstSpectating = new ArrayList<>();
+    private ArrayList<Account> lstWaiting = new ArrayList<>();
 
     private String connectionId;
 
     private OkHttpClient client;
+    private StompConnection stompConnection;
 
     private void updateSpinFighters() {
         List<String> accEmails = new ArrayList<>();
@@ -66,6 +86,19 @@ public class MainActivity extends AppCompatActivity {
         tvErrorMessage = findViewById(R.id.tvErrorMessage);
         spinFighters = findViewById(R.id.spinFighters);
         btnConnection = findViewById(R.id.btnConnection);
+        tvInfosFighter = findViewById(R.id.tvFighterInfo);
+        btnMessagePrivate = findViewById(R.id.btnPrivateMessage);
+        tvMessagePrivate = findViewById(R.id.tvPrivateMessage);
+        btnMessagePublic = findViewById(R.id.btnPublicMessage);
+        tvMessagePublic = findViewById(R.id.tvPublicMessage);
+        btnFightRed = findViewById(R.id.btnFightRed);
+        btnFightWhite = findViewById(R.id.btnFightWhite);
+        btnFightTie = findViewById(R.id.btnFightTie);
+        btnArbiterRed = findViewById(R.id.btnArbiterRed);
+        btnArbiterRedFault = findViewById(R.id.btnArbiterRedFault);
+        btnPassExam = findViewById(R.id.btnExamPass);
+        btnFailExam = findViewById(R.id.btnExamFail);
+        btnChangeRole = findViewById(R.id.btnChangeRole);
 
         client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -89,7 +122,12 @@ public class MainActivity extends AppCompatActivity {
 
                     for (int i = 0; i < arrComptes.length(); i++) {
                         JSONObject obj = arrComptes.getJSONObject(i);
-                        Account acc = new Account(obj.getString("courriel"), obj.getString("avatar"));
+                        Account acc = new Account(
+                                obj.getString("courriel"),
+                                obj.getString("fullName"),
+                                obj.getString("avatar"),
+                                obj.getString("role"),
+                                obj.getString("groupe"));
                         accounts.add(acc);
                     }
 
@@ -100,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Connexion
         btnConnection.setOnClickListener(v -> {
             if (btnConnection.getText() == getResources().getString(R.string.connection_open)) {
                 btnConnection.setText(R.string.connection_close);
@@ -120,19 +159,20 @@ public class MainActivity extends AppCompatActivity {
                         String res = response.body().string();
 
                         MainActivity.this.runOnUiThread(() -> {
-                            //tvErrorMessage.setText(res);
+                            tvErrorMessage.setText("Le compte est connecté");
                             current = getCurrent();
                             current.setSessionId(res);
+
+                            tvInfosFighter.setText(current.getFullName() + ", " + current.getGroupe() + ", " + current.getRole());
                         });
                     }
                 });
-
             } else {
                 btnConnection.setText(R.string.connection_open);
                 spinFighters.setEnabled(true);
 
                 Request request1 = new Request.Builder()
-                        .url("http://10.0.2.2:8080/logout/" + current.getEmail())
+                        .url("http://10.0.2.2:8080/logout/" + current.getSessionId())
                         .build();
 
                 client.newCall(request1).enqueue(new Callback() {
@@ -148,10 +188,44 @@ public class MainActivity extends AppCompatActivity {
                         MainActivity.this.runOnUiThread(() -> {
                             tvErrorMessage.setText(res);
                             current = null;
+
+                            tvInfosFighter.setText(R.string.fighter_info);
                         });
                     }
                 });
             }
         });
+
+        stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
+
+        stompConnection.subReponsePrive(stompMessage -> {
+            Log.i("StompPrive", stompMessage.getPayload());
+            JSONObject rep = new JSONObject(stompMessage.getPayload());
+            Date creation = new Date(rep.getLong("creationTemps"));
+            tvMessagePrivate.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
+        });
+        stompConnection.subReponsePublique(stompMessage -> {
+            Log.i("StompPublic", stompMessage.getPayload());
+            JSONObject rep = new JSONObject(stompMessage.getPayload());
+            Date creation = new Date(rep.getLong("creationTemps"));
+            tvMessagePublic.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
+        });
+
+        // Message privé
+        btnMessagePrivate.setOnClickListener(v -> stompConnection.sendMessagePrivate(current));
+
+        // Message publique
+        btnMessagePublic.setOnClickListener(v -> stompConnection.sendMessagePublic(current));
+
+        // Combat rouge
+        btnFightRed.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.Red));
+        // Combat blanc
+        btnFightWhite.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.White));
+        // Combat nul
+        btnFightTie.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.Tie));
+        // Arbitre Rouge
+        btnArbiterRed.setOnClickListener(v -> stompConnection.sendArbiterRed());
+        // Arbitre Rouge avec faute
+        btnArbiterRedFault.setOnClickListener(v -> stompConnection.sendArbiterRedWithFault());
     }
 }

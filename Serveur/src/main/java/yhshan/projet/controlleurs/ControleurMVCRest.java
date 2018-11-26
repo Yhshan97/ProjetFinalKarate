@@ -69,12 +69,24 @@ public class ControleurMVCRest {
         System.out.println(str);
         System.out.println(listeDesConnexions.toString());
 
-        return str == null  ? "Login OK" : "Remplacé";
+        return session.getId();
     }
 
-    @RequestMapping(value= "/logout/{courriel}", method = RequestMethod.GET)
-    public String logout(@PathVariable("courriel") String courriel,HttpSession session){
-        return listeDesConnexions.remove(courriel,session.getId()) ? "Logout OK" : "Déjà logged out";
+    @RequestMapping(value= "/logout/{sessionId}", method = RequestMethod.GET)
+    public String logout(@PathVariable("sessionId") String sessionId){
+        System.out.println(listeDesConnexions.toString());
+        boolean logout = false;
+        if(listeDesConnexions.containsValue(sessionId)){
+            for (String key: listeDesConnexions.keySet()) {
+                System.out.println(key);
+                if(listeDesConnexions.get(key).equals(sessionId)) {
+                    listeDesConnexions.remove(key);
+                    logout=true;
+                }
+            }
+        }
+
+        return logout ? "Logout OK" : "Déjà logged out";
     }
 
     @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
@@ -144,6 +156,7 @@ public class ControleurMVCRest {
     @MessageMapping("/privatemsg")
     @SendTo("/sujet/reponseprive")
     public Reponse prive(Message message) {
+        System.out.println("Message prive");
         return new Reponse(message.getDe(), new Date().getTime(),"privé");
         //return new Reponse(message.getDe(), new Date().getTime(),message.getContenu());
     }
