@@ -3,16 +3,26 @@ package yhshan.projet;
 public class Message {
 
     private String de;
+    private String session;
     private Long creationTemps;
     private String contenu;
 
     public Message() {
     }
 
-    public Message(String de, Long creationTemps, String contenu) {
+    public Message(String de, String session, Long creationTemps, String contenu) {
         this.de = de;
+        this.session = session;
         this.creationTemps = creationTemps;
         this.contenu = contenu;
+    }
+
+    public String getSession() {
+        return session;
+    }
+
+    public void setSession(String session) {
+        this.session = session;
     }
 
     public String getDe() {
