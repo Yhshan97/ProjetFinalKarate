@@ -2,18 +2,18 @@ package com.example.luxed.karatefrontend;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.example.luxed.karatefrontend.Adapters.AccountAdapter;
 import com.example.luxed.karatefrontend.Entities.Account;
 
 import org.json.JSONArray;
@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.Call;
@@ -50,12 +51,21 @@ public class MainActivity extends AppCompatActivity {
     private Button btnFailExam;
     private Button btnChangeRole;
 
-    private ArrayList<Account> accounts = new ArrayList<>();
+    private HashMap<String, Account> accounts = new HashMap<>();
+    private HashMap<String, String> emailLieu = new HashMap<>();
     private Account current;
     private ArrayList<Account> lstArbiters = new ArrayList<>();
+    private RecyclerView rvArbitrators;
+    private AccountAdapter adapterArbitrators;
     private ArrayList<Account> lstElsewhere = new ArrayList<>();
+    private RecyclerView rvElsewhere;
+    private AccountAdapter adapterElsewhere;
     private ArrayList<Account> lstSpectating = new ArrayList<>();
+    private RecyclerView rvSpectating;
+    private AccountAdapter adapterSpectating;
     private ArrayList<Account> lstWaiting = new ArrayList<>();
+    private RecyclerView rvWaiting;
+    private AccountAdapter adapterWaiting;
 
     private String connectionId;
 
@@ -64,8 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateSpinFighters() {
         List<String> accEmails = new ArrayList<>();
-        for (Account account : accounts)
-            accEmails.add(account.getEmail());
+        accounts.forEach((email, acc) -> accEmails.add(email));
 
         ArrayAdapter<String> adapterFighters = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, accEmails);
 
@@ -73,11 +82,40 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Account getCurrent() {
-        return accounts.get(spinFighters.getSelectedItemPosition());
+        return accounts.get(spinFighters.getSelectedItem().toString());
     }
 
     private String getCurrentEmail() {
         return getCurrent().getEmail();
+    }
+
+    private void updateRecyclerViews() {
+        lstArbiters.clear();
+        lstElsewhere.clear();
+        lstSpectating.clear();
+        lstWaiting.clear();
+
+        emailLieu.forEach((email, lieu) -> {
+            switch (lieu) {
+                case "arbitre":
+                    lstArbiters.add(accounts.get(email));
+                    break;
+                case "ailleurs":
+                    lstElsewhere.add(accounts.get(email));
+                    break;
+                case "spectateur":
+                    lstSpectating.add(accounts.get(email));
+                    break;
+                case "attente":
+                    lstWaiting.add(accounts.get(email));
+                    break;
+            }
+        });
+
+        adapterArbitrators.notifyDataSetChanged();
+        adapterElsewhere.notifyDataSetChanged();
+        adapterSpectating.notifyDataSetChanged();
+        adapterWaiting.notifyDataSetChanged();
     }
 
     @Override
@@ -103,7 +141,55 @@ public class MainActivity extends AppCompatActivity {
         btnChangeRole = findViewById(R.id.btnChangeRole);
         cbArbiter = findViewById(R.id.cbArbiter);
 
+        rvArbitrators = findViewById(R.id.rvArbitrators);
+        adapterArbitrators = new AccountAdapter(lstArbiters);
+        RecyclerView.LayoutManager lmArbitrators = new LinearLayoutManager(getApplicationContext());
+        rvArbitrators.setLayoutManager(lmArbitrators);
+        rvArbitrators.setItemAnimator(new DefaultItemAnimator());
+        rvArbitrators.setAdapter(adapterArbitrators);
+
+        rvElsewhere = findViewById(R.id.rvElsewhere);
+        adapterElsewhere = new AccountAdapter(lstElsewhere);
+        RecyclerView.LayoutManager lmElsewhere = new LinearLayoutManager(getApplicationContext());
+        rvElsewhere.setLayoutManager(lmElsewhere);
+        rvElsewhere.setItemAnimator(new DefaultItemAnimator());
+        rvElsewhere.setAdapter(adapterElsewhere);
+
+        rvSpectating = findViewById(R.id.rvSpectators);
+        adapterSpectating = new AccountAdapter(lstSpectating);
+        RecyclerView.LayoutManager lmSpectating = new LinearLayoutManager(getApplicationContext());
+        rvSpectating.setLayoutManager(lmSpectating);
+        rvSpectating.setItemAnimator(new DefaultItemAnimator());
+        rvSpectating.setAdapter(adapterSpectating);
+
+        rvWaiting = findViewById(R.id.rvWaiting);
+        adapterWaiting = new AccountAdapter(lstWaiting);
+        RecyclerView.LayoutManager lmWaiting = new LinearLayoutManager(getApplicationContext());
+        rvWaiting.setLayoutManager(lmWaiting);
+        rvWaiting.setItemAnimator(new DefaultItemAnimator());
+        rvWaiting.setAdapter(adapterWaiting);
+
         RadioGroup rgPlace = findViewById(R.id.rgPlace);
+
+        stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
+        // Place
+        stompConnection.subChangePlace(stompMessage -> {
+            Log.i("ChangePlace", stompMessage.getPayload());
+            JSONObject obj = new JSONObject(stompMessage.getPayload());
+            emailLieu.clear();
+            obj.keys().forEachRemaining(key -> {
+                try {
+                    String place = obj.getString(key);
+                    emailLieu.put(key, place);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            });
+
+            if (accounts.size() > 0) {
+                MainActivity.this.runOnUiThread(() -> updateRecyclerViews());
+            }
+        });
 
         client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -133,10 +219,14 @@ public class MainActivity extends AppCompatActivity {
                                 obj.getString("avatar"),
                                 obj.getString("role"),
                                 obj.getString("groupe"));
-                        accounts.add(acc);
+                        //accounts.add(acc);
+                        accounts.put(acc.getEmail(), acc);
                     }
 
-                    MainActivity.this.runOnUiThread(() -> updateSpinFighters());
+                    MainActivity.this.runOnUiThread(() -> {
+                        updateSpinFighters();
+                        updateRecyclerViews();
+                    });
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -201,8 +291,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
-
         stompConnection.subReponsePrive(stompMessage -> {
             Log.i("StompPrive", stompMessage.getPayload());
             if (current != null) {
@@ -224,17 +312,19 @@ public class MainActivity extends AppCompatActivity {
         // Message publique
         btnMessagePublic.setOnClickListener(v -> stompConnection.sendMessagePublic(current));
 
-        // Place
         rgPlace.setOnCheckedChangeListener((group, checkedId) -> {
             switch (checkedId) {
                 case R.id.rbElsewhere:
                     Log.i("MainActivity", "Elsewhere");
+                    stompConnection.sendChangePlace(current, "ailleurs", false);
                     break;
                 case R.id.rbSpectator:
                     Log.i("MainActivity", "Spectator");
+                    stompConnection.sendChangePlace(current, "spectateur", false);
                     break;
                 case R.id.rbWaiting:
                     Log.i("MainActivity", "Waiting");
+                    stompConnection.sendChangePlace(current, "attente", false);
                     break;
             }
         });
@@ -242,8 +332,10 @@ public class MainActivity extends AppCompatActivity {
         cbArbiter.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 Log.i("MainActivity", "Arbitre");
+                stompConnection.sendChangePlace(current, "attente", true);
             } else {
                 Log.i("MainActivity", "Plus Arbitre");
+                stompConnection.sendChangePlace(current, "attente", false);
             }
         });
 
@@ -253,9 +345,9 @@ public class MainActivity extends AppCompatActivity {
         btnFightWhite.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.White));
         // Combat nul
         btnFightTie.setOnClickListener(v -> stompConnection.sendFight(StompConnection.FightType.Tie));
-        // Arbitre Rouge
+        // Arbitre rouge
         btnArbiterRed.setOnClickListener(v -> stompConnection.sendArbiterRed());
-        // Arbitre Rouge avec faute
+        // Arbitre rouge avec faute
         btnArbiterRedFault.setOnClickListener(v -> stompConnection.sendArbiterRedWithFault());
         // Passer examen
         btnPassExam.setOnClickListener(v -> stompConnection.sendPassExam());

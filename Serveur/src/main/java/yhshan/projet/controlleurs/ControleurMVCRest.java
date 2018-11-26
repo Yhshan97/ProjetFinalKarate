@@ -82,6 +82,7 @@ public class ControleurMVCRest {
                 e.printStackTrace();
             }
         }
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
         return "{ comptes : [" + String.join(",",listeComptesJSON) + "] }";
     }
 
@@ -92,6 +93,9 @@ public class ControleurMVCRest {
         System.out.println(str);
         System.out.println(listeDesConnexions.toString());
         lstPositions.put(courriel,"ailleurs");
+
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
+
         return session.getId();
     }
 
@@ -103,6 +107,7 @@ public class ControleurMVCRest {
             for (String key: listeDesConnexions.keySet()) {
                 System.out.println(key);
                 if(listeDesConnexions.get(key).equals(sessionId)) {
+                    System.out.println("yes");
                     listeDesConnexions.remove(key);
                     lstPositions.remove(key);
                     logout=true;
@@ -110,6 +115,8 @@ public class ControleurMVCRest {
                 }
             }
         }
+
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
 
         return logout ? "Logout OK" : "Déjà logged out";
     }
