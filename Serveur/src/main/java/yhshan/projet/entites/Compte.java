@@ -261,6 +261,11 @@ public class Compte implements UserDetails {
             credits += comb.getCreditsArbitre();
         }
 
+        for(Examen exam : evalues){
+            if(credits >=10)
+                credits -= exam.aReussi? 10 : 0;
+        }
+
         return credits;
     }
 
