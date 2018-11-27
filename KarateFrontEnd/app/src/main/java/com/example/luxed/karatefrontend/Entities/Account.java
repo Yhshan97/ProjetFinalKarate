@@ -1,6 +1,6 @@
 package com.example.luxed.karatefrontend.Entities;
 
-public class Account {
+public class Account/* implements Comparable*/ {
     private String sessionId;
 
     private String email;
@@ -27,6 +27,16 @@ public class Account {
         this.email = "";
         this.avatar = "";
     }
+
+    /*@Override
+    public boolean equals(Object acc) {
+        return email.equals(((Account) acc).getEmail());
+    }
+
+    @Override
+    public int compareTo(Object acc) {
+        Account account = (Account) acc;
+    }*/
 
     public String getEmail() {
         return email;
