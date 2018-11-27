@@ -315,7 +315,24 @@ public class ControleurMVCRest {
             return "refusé";
     }
 
+    @RequestMapping(value="/passage/{courriel}/{session}", method= RequestMethod.GET)
+    public String passage(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
+        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+            Compte compteCourant = compteDao.getOne(courriel);
 
+            if(compteCourant.getArbitres().size() >= 30 && compteCourant.calculCredits() >= 10 && compteCourant.getRole().getId() ==1)
+            {
+                compteCourant.setRole(roleDao.getOne(2));
+                compteDao.save(compteCourant);
+
+                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                return "ok";
+            }
+            else return "Pas assez de crédits ou de nombre de combats / Déjà ancien";
+        }
+        else
+            return "refusé";
+    }
 
     /*
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
