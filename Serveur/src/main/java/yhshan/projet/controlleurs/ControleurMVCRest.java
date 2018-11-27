@@ -275,6 +275,9 @@ public class ControleurMVCRest {
                 examenDao.save(exam);
                 compteDao.save(compteCourant);
 
+                System.out.println(compteCourant.calculPoints());
+                System.out.println(compteCourant.calculCredits());
+
                 this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
             } else return "Pas assez de points ou de crédits / Ceinture la plus haute";
@@ -293,7 +296,7 @@ public class ControleurMVCRest {
                 Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
                 //compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
                 examenDao.save(exam);
-                compteDao.save(compteCourant);
+                //compteDao.save(compteCourant);
 
                 this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";

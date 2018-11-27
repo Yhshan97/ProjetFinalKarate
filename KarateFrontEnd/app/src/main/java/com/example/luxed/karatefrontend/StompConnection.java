@@ -52,21 +52,15 @@ public class StompConnection {
         Disposable dis = client.topic(destination).subscribe(event);
     }
 
-    public void subReponsePublique(Consumer<StompMessage> event) {
-        subTopic("/sujet/reponsepublique", event);
-    }
+    public void subReponsePublique(Consumer<StompMessage> event) { subTopic("/sujet/reponsepublique", event); }
 
-    public void subReponsePrive(Consumer<StompMessage> event) {
-        subTopic("/sujet/reponseprive", event);
-    }
+    public void subReponsePrive(Consumer<StompMessage> event) { subTopic("/sujet/reponseprive", event); }
 
-    public void subChangePlace(Consumer<StompMessage> event) {
-        subTopic("/sujet/lstLieux", event);
-    }
+    public void subChangePlace(Consumer<StompMessage> event) { subTopic("/sujet/lstLieux", event); }
 
-    public void subMAJCompte(Consumer<StompMessage> event) {
-        subTopic("/sujet/MAJCompte", event);
-    }
+    public void subMAJCompte(Consumer<StompMessage> event) { subTopic("/sujet/MAJCompte", event); }
+
+    public void subLstComptes(Consumer<StompMessage> event) { subTopic("/sujet/lstComptes", event); }
 
     public void sendMessage(String destination, String message) {
         Log.i("STOMP", "Sending message to " + destination);
@@ -94,34 +88,5 @@ public class StompConnection {
         }
     }
 
-    public void sendFight(FightType type) {
-        switch (type) {
-            case Red:
-                break;
-            case White:
-                break;
-            case Tie:
-                break;
-        }
-    }
-
-    public void sendArbiterRed() {
-
-    }
-
-    public void sendArbiterRedWithFault() {
-
-    }
-
-    public void sendPassExam() {
-
-    }
-
-    public void sendFailExam() {
-
-    }
-
-    public void sendChangeRole() {
-
-    }
+    public void sendGetLstComptes() { client.send("/app/getLstComptes").subscribe(); }
 }

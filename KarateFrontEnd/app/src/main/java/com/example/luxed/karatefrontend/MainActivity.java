@@ -21,19 +21,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private TextView tvErrorMessage;
@@ -89,6 +81,30 @@ public class MainActivity extends AppCompatActivity {
 
     private String getCurrentEmail() {
         return getCurrent().getEmail();
+    }
+
+    private void updateLstAccounts(boolean current) {
+        httpConnection.executeRequest(
+                "http://10.0.2.2:8080/lstComptes",
+                (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("La liste des comptes n'a pas pu être retournée")),
+                (call, response) -> {
+                    tvErrorMessage.setText(R.string.ok);
+                    try {
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        updateAccountList(jsonObject, current);
+
+                        MainActivity.this.runOnUiThread(() -> {
+                            updateSpinFighters();
+                            updateRecyclerViews();
+                            if (current) {
+                                updateInfoFighter();
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
     }
 
     private void updateAccountList(JSONObject jsonObject, boolean updateCurrent) throws JSONException {
@@ -230,24 +246,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        httpConnection.executeRequest(
-                "http://10.0.2.2:8080/lstComptes",
-                (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("La liste des comptes n'a pas pu être retournée")),
-                (call, response) -> {
-                    tvErrorMessage.setText(R.string.ok);
-                    try {
-                        JSONObject jsonObject = new JSONObject(response.body().string());
-                        updateAccountList(jsonObject, false);
-
-                        MainActivity.this.runOnUiThread(() -> {
-                            updateSpinFighters();
-                            updateRecyclerViews();
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-        );
+        updateLstAccounts(false);
 
         // Connexion
         btnConnection.setOnClickListener(v -> {
@@ -307,6 +306,22 @@ public class MainActivity extends AppCompatActivity {
             tvMessagePublic.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
         });
         stompConnection.subMAJCompte(stompMessage -> {
+            Log.i("MAJCompte", "MAJ des comptes");
+            try {
+                JSONObject jsonObject = new JSONObject(stompMessage.getPayload());
+                updateAccountList(jsonObject, true);
+
+                MainActivity.this.runOnUiThread(() -> {
+                    updateSpinFighters();
+                    updateRecyclerViews();
+                    updateInfoFighter();
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+        stompConnection.subLstComptes(stompMessage -> {
+            Log.i("LstComptes", "MAJ des comptes");
             try {
                 JSONObject jsonObject = new JSONObject(stompMessage.getPayload());
                 updateAccountList(jsonObject, true);
@@ -411,7 +426,11 @@ public class MainActivity extends AppCompatActivity {
                     (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
                     (call, response) -> {
                         String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        MainActivity.this.runOnUiThread(() -> {
+                            tvErrorMessage.setText(res);
+
+                            stompConnection.sendGetLstComptes();
+                        });
                     });
         });
         // Fail exam
@@ -421,7 +440,11 @@ public class MainActivity extends AppCompatActivity {
                     (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
                     (call, response) -> {
                         String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        MainActivity.this.runOnUiThread(() -> {
+                            tvErrorMessage.setText(res);
+
+                            stompConnection.sendGetLstComptes();
+                        });
                     });
         });
         // Changer role
