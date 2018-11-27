@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvMessagePrivate;
     private Button btnMessagePublic;
     private TextView tvMessagePublic;
+    private RadioButton rbElsewhere;
     private CheckBox cbArbiter;
     private Button btnFightRed;
     private Button btnFightWhite;
@@ -70,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private String connectionId;
 
     private OkHttpClient client;
+    private HttpConnection httpConnection;
     private StompConnection stompConnection;
 
     private void updateSpinFighters() {
@@ -172,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         btnFailExam = findViewById(R.id.btnExamFail);
         btnChangeRole = findViewById(R.id.btnChangeRole);
         cbArbiter = findViewById(R.id.cbArbiter);
+        rbElsewhere = findViewById(R.id.rbElsewhere);
 
         rvArbitrators = findViewById(R.id.rvArbitrators);
         adapterArbitrators = new AccountAdapter(lstArbiters);
@@ -202,6 +206,8 @@ public class MainActivity extends AppCompatActivity {
         rvWaiting.setAdapter(adapterWaiting);
 
         RadioGroup rgPlace = findViewById(R.id.rgPlace);
+
+        httpConnection = new HttpConnection();
 
         stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
         // Place
@@ -285,6 +291,8 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 btnConnection.setText(R.string.connection_open);
                 spinFighters.setEnabled(true);
+                rbElsewhere.setChecked(true);
+                cbArbiter.setChecked(false);
 
                 Request request1 = new Request.Builder()
                         .url("http://10.0.2.2:8080/logout/" + current.getSessionId())
@@ -437,14 +445,68 @@ public class MainActivity extends AppCompatActivity {
             });
         });
         // Arbitre rouge
-        btnArbiterRed.setOnClickListener(v -> stompConnection.sendArbiterRed());
+        btnArbiterRed.setOnClickListener(v -> {
+            Request request1 = new Request.Builder()
+                    .url("http://10.0.2.2:8080/arbitrer1/" + current.getEmail() + "/" + current.getSessionId())
+                    .build();
+
+            client.newCall(request1).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible"));
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String res = response.body().string();
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+
+                    // Refresh liste
+                }
+            });
+        });
         // Arbitre rouge avec faute
-        btnArbiterRedFault.setOnClickListener(v -> stompConnection.sendArbiterRedWithFault());
+        btnArbiterRedFault.setOnClickListener(v -> {
+            Request request1 = new Request.Builder()
+                    .url("http://10.0.2.2:8080/arbitrer2/" + current.getEmail() + "/" + current.getSessionId())
+                    .build();
+
+            client.newCall(request1).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible"));
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String res = response.body().string();
+                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                }
+            });
+        });
         // Passer examen
-        btnPassExam.setOnClickListener(v -> stompConnection.sendPassExam());
+        btnPassExam.setOnClickListener(v ->
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/examen1/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
+                    (call, response) -> {
+                        String res = response.body().string();
+
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    }));
         // Fail exam
-        btnFailExam.setOnClickListener(v -> stompConnection.sendFailExam());
+        btnFailExam.setOnClickListener(v ->
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/examen2/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
+                    (call, response) -> {
+                        String res = response.body().string();
+
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    }));
         // Changer role
-        btnChangeRole.setOnClickListener(v -> stompConnection.sendChangeRole());
+        btnChangeRole.setOnClickListener(v -> {
+
+        });
     }
 }
