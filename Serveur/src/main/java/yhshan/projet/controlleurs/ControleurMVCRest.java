@@ -46,11 +46,11 @@ public class ControleurMVCRest {
 
     static public Map<String, String> listeDesConnexions = new HashMap();
 
-    LinkedHashMap<String,String> lstPositions = new LinkedHashMap();
+    LinkedHashMap<String, String> lstPositions = new LinkedHashMap();
 
-    private Compte compteGauche,compteDroite,compteArbitre;
+    private Compte compteGauche, compteDroite, compteArbitre;
 
-    private String gaucheAttaque ="",droiteAttaque ="";
+    private String gaucheAttaque = "", droiteAttaque = "";
 
     private int nbFois = 0;
 
@@ -67,16 +67,16 @@ public class ControleurMVCRest {
         this.template = template;
     }
 
-    @RequestMapping(value="/lstComptes", method = RequestMethod.GET)
-    public String listeComptes(){
+    @RequestMapping(value = "/lstComptes", method = RequestMethod.GET)
+    public String listeComptes() {
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addSerializer(Compte.class, new CompteSerializer());
         mapper.registerModule(module);
 
-        List<String> listeComptesJSON   =  new ArrayList<>();
-        for (Compte user: compteDao.findAll()) {
+        List<String> listeComptesJSON = new ArrayList<>();
+        for (Compte user : compteDao.findAll()) {
             try {
                 listeComptesJSON.add(mapper.writeValueAsString(user));
             } catch (JsonProcessingException e) {
@@ -84,34 +84,34 @@ public class ControleurMVCRest {
             }
         }
         this.template.convertAndSend("/sujet/lstLieux", lstPositions);
-        return "{ comptes : [" + String.join(",",listeComptesJSON) + "] }";
+        return "{ comptes : [" + String.join(",", listeComptesJSON) + "] }";
     }
 
-    @RequestMapping(value= "/login/{courriel}", method = RequestMethod.GET)
-    public String login(@PathVariable("courriel") String courriel, HttpSession session){
+    @RequestMapping(value = "/login/{courriel}", method = RequestMethod.GET)
+    public String login(@PathVariable("courriel") String courriel, HttpSession session) {
 
         String str = listeDesConnexions.put(courriel, session.getId());
         System.out.println(str);
         System.out.println(listeDesConnexions.toString());
-        lstPositions.put(courriel,"ailleurs");
+        lstPositions.put(courriel, "ailleurs");
 
         this.template.convertAndSend("/sujet/lstLieux", lstPositions);
 
         return session.getId();
     }
 
-    @RequestMapping(value= "/logout/{sessionId}", method = RequestMethod.GET)
-    public String logout(@PathVariable("sessionId") String sessionId){
+    @RequestMapping(value = "/logout/{sessionId}", method = RequestMethod.GET)
+    public String logout(@PathVariable("sessionId") String sessionId) {
         System.out.println(listeDesConnexions.toString());
         boolean logout = false;
-        if(listeDesConnexions.containsValue(sessionId)){
-            for (String key: listeDesConnexions.keySet()) {
+        if (listeDesConnexions.containsValue(sessionId)) {
+            for (String key : listeDesConnexions.keySet()) {
                 System.out.println(key);
-                if(listeDesConnexions.get(key).equals(sessionId)) {
+                if (listeDesConnexions.get(key).equals(sessionId)) {
                     System.out.println("yes");
                     listeDesConnexions.remove(key);
                     lstPositions.remove(key);
-                    logout=true;
+                    logout = true;
                     break;
                 }
             }
@@ -123,7 +123,7 @@ public class ControleurMVCRest {
     }
 
     @GetMapping("/")
-    HashMap<String,String> uid() {
+    HashMap<String, String> uid() {
         System.out.println(lstPositions.toString());
         return null;
     }
@@ -133,11 +133,10 @@ public class ControleurMVCRest {
     public Reponse publique(Message message) {
         Compte sender = compteDao.getOne(message.getDe());
 
-        if(listeDesConnexions.get(message.getDe()) != null && sender != null){
+        if (listeDesConnexions.get(message.getDe()) != null && sender != null) {
             return sender.getRole().getId() > 1 && listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
-                    new Reponse(message.getDe(), new Date().getTime(),"public") : null;
-        }
-        else return null;
+                    new Reponse(message.getDe(), new Date().getTime(), "public") : null;
+        } else return null;
     }
 
     @MessageMapping("/privatemsg")
@@ -145,9 +144,9 @@ public class ControleurMVCRest {
     public Reponse prive(Message message) {
         //return new Reponse(message.getDe(), new Date().getTime(),"privé");
 
-        if(listeDesConnexions.get(message.getDe()) != null){
+        if (listeDesConnexions.get(message.getDe()) != null) {
             return listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
-                    new Reponse(message.getDe(), new Date().getTime(),"privé") : null;
+                    new Reponse(message.getDe(), new Date().getTime(), "privé") : null;
         }
 
         return null;
@@ -155,21 +154,21 @@ public class ControleurMVCRest {
 
     @MessageMapping("/lieux")
     @SendTo("/sujet/lstLieux")
-    public HashMap<String,String> lieux(LieuxMessage message) {
+    public HashMap<String, String> lieux(LieuxMessage message) {
 
         String courriel = message.getCourriel();
         String session = message.getSession();
         String position = message.getPosition();
         boolean arbitre = message.isArbitre();
 
-        if(position.equals("attente") && arbitre)
+        if (position.equals("attente") && arbitre)
             position = "arbitre";
 
-        if(listeDesConnexions.get(courriel) == null)
+        if (listeDesConnexions.get(courriel) == null)
             return null;
 
-        else if(listeDesConnexions.get(courriel).equals(session))
-            lstPositions.put(courriel,position);
+        else if (listeDesConnexions.get(courriel).equals(session))
+            lstPositions.put(courriel, position);
 
         else  //La session est différente
             return null;
@@ -177,69 +176,63 @@ public class ControleurMVCRest {
         return lstPositions;
     }
 
-    @RequestMapping(value="/combat1/{courriel}/{session}", method= RequestMethod.GET)
-    public String combat1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/combat1/{courriel}/{session}", method = RequestMethod.GET)
+    public String combat1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
 
-            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+            if (lstPositions.get(rouge.getUsername()).equals("attente")) {
                 Long milli = new Date().getTime();
                 Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
                 combatDao.save(combat);
-                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
-            }
-            else return "Pas en attente";
-        }
-        else
+            } else return "Pas en attente";
+        } else
             return "refusé";
     }
 
-    @RequestMapping(value="/combat2/{courriel}/{session}", method= RequestMethod.GET)
-    public String combat2(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/combat2/{courriel}/{session}", method = RequestMethod.GET)
+    public String combat2(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
 
-            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+            if (lstPositions.get(rouge.getUsername()).equals("attente")) {
                 Long milli = new Date().getTime();
                 Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 10, 0);
                 combatDao.save(combat);
-                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
-            }
-            else return "Pas en attente";
-        }
-        else
+            } else return "Pas en attente";
+        } else
             return "refusé";
     }
 
-    @RequestMapping(value="/combat3/{courriel}/{session}", method= RequestMethod.GET)
-    public String combat3(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/combat3/{courriel}/{session}", method = RequestMethod.GET)
+    public String combat3(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte rouge = compteDao.getOne(courriel);
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne("v1@dojo");
 
-            if(lstPositions.get(rouge.getUsername()).equals("attente")) {
+            if (lstPositions.get(rouge.getUsername()).equals("attente")) {
                 Long milli = new Date().getTime();
                 Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 5, 5);
                 combatDao.save(combat);
-                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
-            }
-            else return "Pas en attente";
-        }
-        else
+            } else return "Pas en attente";
+        } else
             return "refusé";
     }
 
-    @RequestMapping(value="/arbitrer1/{courriel}/{session}", method= RequestMethod.GET)
-    public String arbitrer1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/arbitrer1/{courriel}/{session}", method = RequestMethod.GET)
+    public String arbitrer1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte rouge = compteDao.getOne("v1@dojo");
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne(courriel);
@@ -247,16 +240,15 @@ public class ControleurMVCRest {
             Long milli = new Date().getTime();
             Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 1, 0, 10);
             combatDao.save(combat);
-            this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+            this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
             return "ok";
-        }
-        else
+        } else
             return "refusé";
     }
 
-    @RequestMapping(value="/arbitrer2/{courriel}/{session}", method= RequestMethod.GET)
-    public String arbitrer2(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/arbitrer2/{courriel}/{session}", method = RequestMethod.GET)
+    public String arbitrer2(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte rouge = compteDao.getOne("v1@dojo");
             Compte blanc = compteDao.getOne("s1@dojo");
             Compte arbitre = compteDao.getOne(courriel);
@@ -264,73 +256,65 @@ public class ControleurMVCRest {
             Long milli = new Date().getTime();
             Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 0, 10, 10);
             combatDao.save(combat);
-            this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+            this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
             return "ok";
-        }
-        else
+        } else
             return "refusé";
     }
 
-            @RequestMapping(value="/examen1/{courriel}/{session}", method= RequestMethod.GET)
-            public String examen1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-                if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
-                    Compte compteCourant = compteDao.getOne(courriel);
+    @RequestMapping(value = "/examen1/{courriel}/{session}", method = RequestMethod.GET)
+    public String examen1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+            Compte compteCourant = compteDao.getOne(courriel);
             Compte evaluateur = compteDao.getOne("v1@dojo");
 
-            if(compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {
+            if (compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {
                 Long milli = new Date().getTime();
-                Examen exam = new Examen(milli,true,compteCourant.getGroupe(),evaluateur,compteCourant);
+                Examen exam = new Examen(milli, true, compteCourant.getGroupe(), evaluateur, compteCourant);
                 compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
                 examenDao.save(exam);
                 compteDao.save(compteCourant);
 
-                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
-            }
-            else return "Pas assez de points ou de crédits / Ceinture la plus haute";
-        }
-        else
+            } else return "Pas assez de points ou de crédits / Ceinture la plus haute";
+        } else
             return "refusé";
     }
 
-    @RequestMapping(value="/examen2/{courriel}/{session}", method= RequestMethod.GET)
-    public String examen2(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/examen2/{courriel}/{session}", method = RequestMethod.GET)
+    public String examen2(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte compteCourant = compteDao.getOne(courriel);
             Compte evaluateur = compteDao.getOne("v1@dojo");
 
-            if(compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {
+            if (compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {
                 Long milli = new Date().getTime();
-                Examen exam = new Examen(milli,false,compteCourant.getGroupe(),evaluateur,compteCourant);
+                Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
                 //compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
                 examenDao.save(exam);
                 compteDao.save(compteCourant);
 
-                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
-            }
-            else return "Pas assez de points ou de crédits / Ceinture la plus haute";
-        }
-        else
+            } else return "Pas assez de points ou de crédits / Ceinture la plus haute";
+        } else
             return "refusé";
     }
 
-    @RequestMapping(value="/passage/{courriel}/{session}", method= RequestMethod.GET)
-    public String passage(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+    @RequestMapping(value = "/passage/{courriel}/{session}", method = RequestMethod.GET)
+    public String passage(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
+        if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
             Compte compteCourant = compteDao.getOne(courriel);
 
-            if(compteCourant.getArbitres().size() >= 30 && compteCourant.calculCredits() >= 10 && compteCourant.getRole().getId() ==1)
-            {
+            if (compteCourant.getArbitres().size() >= 30 && compteCourant.calculCredits() >= 10 && compteCourant.getRole().getId() == 1) {
                 compteCourant.setRole(roleDao.getOne(2));
                 compteDao.save(compteCourant);
 
-                this.template.convertAndSend("/sujet/MAJCompte",listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
-            }
-            else return "Pas assez de crédits ou de nombre de combats / Déjà ancien";
-        }
-        else
+            } else return "Pas assez de crédits ou de nombre de combats / Déjà ancien";
+        } else
             return "refusé";
     }
 
@@ -439,13 +423,13 @@ public class ControleurMVCRest {
                 listArbitres.add(compte);
         }
 */
-        if(listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat){
+        if (listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat) {
             Random rand = new Random();
 
             int random = rand.nextInt(listCombattants.size());
             int random2 = rand.nextInt(listCombattants.size());
             int randomArbitre = rand.nextInt(listArbitres.size());
-            while(random == random2)
+            while (random == random2)
                 random2 = rand.nextInt(listCombattants.size());
 
             compteGauche = compteDao.getOne(listCombattants.get(random).getUsername());
@@ -461,10 +445,10 @@ public class ControleurMVCRest {
             String avatarArbitre = compteArbitre.getAvatar().getAvatar();
 
             enCombat = true;
-            String strJSON = "{ \"gaucheNom\" : \"" + nomGauche + "\", \"gaucheAvatar\" : \"" + avatarGauche +"\", \"droiteNom\" : \""+ nomDroite +"\"," +
-                    " \"droiteAvatar\" : \""+avatarDroite+"\", \"arbitreNom\" : \""+nomArbitre+"\", \"arbitreAvatar\" : \""+avatarArbitre+"\"}";
+            String strJSON = "{ \"gaucheNom\" : \"" + nomGauche + "\", \"gaucheAvatar\" : \"" + avatarGauche + "\", \"droiteNom\" : \"" + nomDroite + "\"," +
+                    " \"droiteAvatar\" : \"" + avatarDroite + "\", \"arbitreNom\" : \"" + nomArbitre + "\", \"arbitreAvatar\" : \"" + avatarArbitre + "\"}";
 
-            this.template.convertAndSend("/sujet/infoCombat",strJSON);
+            this.template.convertAndSend("/sujet/infoCombat", strJSON);
         }
     }
 
@@ -724,7 +708,6 @@ public class ControleurMVCRest {
     }
 
 */
-
 
 
 }
