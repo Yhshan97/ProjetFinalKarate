@@ -18,7 +18,9 @@ import yhshan.projet.entites.Combat;
 import yhshan.projet.entites.Compte;
 import yhshan.projet.entites.Examen;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.util.*;
 
 import static java.lang.Thread.sleep;
@@ -67,6 +69,7 @@ public class ControleurMVCRest {
         this.template = template;
     }
 
+    @Transactional
     @RequestMapping(value = "/lstComptes", method = RequestMethod.GET)
     public String listeComptes() {
 
@@ -90,14 +93,17 @@ public class ControleurMVCRest {
     @RequestMapping(value = "/login/{courriel}", method = RequestMethod.GET)
     public String login(@PathVariable("courriel") String courriel, HttpSession session) {
 
-        String str = listeDesConnexions.put(courriel, session.getId());
-        System.out.println(str);
-        System.out.println(listeDesConnexions.toString());
-        lstPositions.put(courriel, "ailleurs");
+        if(!compteDao.findById(courriel).equals(Optional.empty())) {
+            String str = listeDesConnexions.put(courriel, session.getId());
+            System.out.println(str);
+            System.out.println(listeDesConnexions.toString());
+            lstPositions.put(courriel, "ailleurs");
 
-        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
+            this.template.convertAndSend("/sujet/lstLieux", lstPositions);
 
-        return session.getId();
+            return session.getId();
+        }
+        return null;
     }
 
     @RequestMapping(value = "/logout/{sessionId}", method = RequestMethod.GET)
@@ -176,6 +182,12 @@ public class ControleurMVCRest {
         return lstPositions;
     }
 
+    @MessageMapping("/getLstComptes")
+    @SendTo("/sujet/lstComptes")
+    public String listeComptesWS() {
+        return listeComptes();
+    }
+
     @RequestMapping(value = "/combat1/{courriel}/{session}", method = RequestMethod.GET)
     public String combat1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
         if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
@@ -212,6 +224,7 @@ public class ControleurMVCRest {
             return "refusé";
     }
 
+
     @RequestMapping(value = "/combat3/{courriel}/{session}", method = RequestMethod.GET)
     public String combat3(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
         if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
@@ -229,6 +242,7 @@ public class ControleurMVCRest {
         } else
             return "refusé";
     }
+
 
     @RequestMapping(value = "/arbitrer1/{courriel}/{session}", method = RequestMethod.GET)
     public String arbitrer1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
@@ -256,12 +270,14 @@ public class ControleurMVCRest {
             Long milli = new Date().getTime();
             Combat combat = new Combat(milli, arbitre, rouge, blanc, rouge.getGroupe(), blanc.getGroupe(), 0, 10, 10);
             combatDao.save(combat);
+
             this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
             return "ok";
         } else
             return "refusé";
     }
 
+    @Transactional
     @RequestMapping(value = "/examen1/{courriel}/{session}", method = RequestMethod.GET)
     public String examen1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
         if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
@@ -272,19 +288,17 @@ public class ControleurMVCRest {
                 Long milli = new Date().getTime();
                 Examen exam = new Examen(milli, true, compteCourant.getGroupe(), evaluateur, compteCourant);
                 compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
-                examenDao.save(exam);
-                compteDao.save(compteCourant);
+                examenDao.saveAndFlush(exam);
+                compteDao.saveAndFlush(compteCourant);
 
-                System.out.println(compteCourant.calculPoints());
-                System.out.println(compteCourant.calculCredits());
-
-                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
+                //this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
             } else return "Pas assez de points ou de crédits / Ceinture la plus haute";
         } else
             return "refusé";
     }
 
+    @Transactional
     @RequestMapping(value = "/examen2/{courriel}/{session}", method = RequestMethod.GET)
     public String examen2(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
         if (listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
@@ -294,11 +308,11 @@ public class ControleurMVCRest {
             if (compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {
                 Long milli = new Date().getTime();
                 Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
-                //compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
-                examenDao.save(exam);
-                //compteDao.save(compteCourant);
+                examenDao.saveAndFlush(exam);
 
-                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
+                System.out.println(compteCourant.calculCredits());
+                //this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
+
                 return "ok";
             } else return "Pas assez de points ou de crédits / Ceinture la plus haute";
         } else

@@ -261,8 +261,8 @@ public class Compte implements UserDetails {
             credits += comb.getCreditsArbitre();
         }
 
-        for(Examen exam : evalues){
-            credits -= exam.getaReussi()? 10 : 5;
+        for(Examen exam : getEvalues()){
+            credits -= exam.getaReussi() ? 10 : 5;
         }
 
         credits -= role.getId() == 2 ? 10 : 0;
