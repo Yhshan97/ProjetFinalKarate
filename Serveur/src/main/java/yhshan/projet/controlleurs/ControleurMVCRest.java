@@ -271,10 +271,10 @@ public class ControleurMVCRest {
             return "refusé";
     }
 
-    @RequestMapping(value="/examen1/{courriel}/{session}", method= RequestMethod.GET)
-    public String examen1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
-        if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
-            Compte compteCourant = compteDao.getOne(courriel);
+            @RequestMapping(value="/examen1/{courriel}/{session}", method= RequestMethod.GET)
+            public String examen1(@PathVariable("session") String session,@PathVariable("courriel") String courriel){
+                if(listeDesConnexions.get(courriel) != null && listeDesConnexions.get(courriel).equals(session)) {
+                    Compte compteCourant = compteDao.getOne(courriel);
             Compte evaluateur = compteDao.getOne("v1@dojo");
 
             if(compteCourant.calculPoints() >= 100 && compteCourant.calculCredits() >= 10 && compteCourant.getGroupe().getId() < 8) {

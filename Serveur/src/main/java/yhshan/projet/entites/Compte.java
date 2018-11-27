@@ -262,9 +262,11 @@ public class Compte implements UserDetails {
         }
 
         for(Examen exam : evalues){
-            if(credits >=10)
+            if(credits >= 10)
                 credits -= exam.aReussi? 10 : 0;
         }
+
+        credits -= groupe.getId() == 2 ? 10 : 0;
 
         return credits;
     }
