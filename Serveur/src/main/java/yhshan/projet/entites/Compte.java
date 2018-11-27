@@ -262,7 +262,7 @@ public class Compte implements UserDetails {
         }
 
         for(Examen exam : evalues){
-            credits -= exam.aReussi? 10 : 0;
+            credits -= exam.aReussi? 10 : 5;
         }
 
         credits -= role.getId() == 2 ? 10 : 0;
