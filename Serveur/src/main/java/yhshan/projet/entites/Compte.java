@@ -237,17 +237,58 @@ public class Compte implements UserDetails {
                 '}';
     }
 
+    private int getPointsBasedOnEcart(int ecart){
+        int points = 0;
+
+        switch(ecart){
+            case 0:points = 10; break;
+            case 1:points = 12; break;
+            case 2:points = 15; break;
+            case 3:points = 20; break;
+            case 4:points = 25; break;
+            case 5:points = 30; break;
+            case 6:points = 50; break;
+            case -1:points = 9; break;
+            case -2:points = 7; break;
+            case -3:points = 5; break;
+            case -4:points = 3; break;
+            case -5:points = 2; break;
+            case -6:points = 1; break;
+        }
+        return points;
+    }
+
     public int calculPoints(){
         int ptsCourant = 0;
         Set<Combat> lst = blancs;
-        for (Combat comb: lst) {
-            if(comb.getCeintureBlanc() == groupe)
-                ptsCourant += comb.getPointsBlanc();
+
+        for (Combat comb: lst) { // List of battles where hes white
+            if (comb.getCeintureBlanc() == groupe && comb.getPointsBlanc() != 0) {
+                //if his belt of the battle is == to his current belt && gains points
+
+                int ecart = comb.getCeintureRouge().getId() - groupe.getId();
+                int ptsGagne = getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                if(comb.getPointsBlanc() == 5) // else divide by 2
+                    ptsGagne = ptsGagne >> 1;
+
+                ptsCourant += ptsGagne;
+            }
         }
+
         lst = rouges;
-        for (Combat comb: lst) {
-            if(comb.getCeintureRouge() == groupe)
-                ptsCourant += comb.getPointsRouge();
+        for (Combat comb: lst) { // List of battles where hes red
+            if (comb.getCeintureRouge() == groupe && comb.getPointsRouge() != 0) {
+                //if his belt of the battle is == to his current belt && gains points
+
+                int ecart = comb.getCeintureBlanc().getId() - groupe.getId();
+                int ptsGagne = getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                if(comb.getPointsRouge() == 5) // else divide by 2
+                    ptsGagne = ptsGagne >> 1;
+
+                ptsCourant += ptsGagne;
+            }
         }
 
         return ptsCourant;
@@ -257,6 +298,7 @@ public class Compte implements UserDetails {
 
         int credits = 0;
         Set<Combat> lst = arbitres;
+
         for (Combat comb: lst) {
             credits += comb.getCreditsArbitre();
         }
@@ -269,5 +311,7 @@ public class Compte implements UserDetails {
 
         return credits;
     }
+
+
 
 }
