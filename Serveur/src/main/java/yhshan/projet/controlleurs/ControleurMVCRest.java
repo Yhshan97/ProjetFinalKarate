@@ -184,7 +184,7 @@ public class ControleurMVCRest {
 
     @MessageMapping("/getLstComptes")
     @SendTo("/sujet/lstComptes")
-    public String listeComptes(String vide) {
+    public String listeComptesWS() {
         return listeComptes();
     }
 
@@ -291,8 +291,6 @@ public class ControleurMVCRest {
                 examenDao.saveAndFlush(exam);
                 compteDao.saveAndFlush(compteCourant);
 
-                System.out.println(compteCourant.calculCredits());
-                System.out.println(exam.toString());
                 //this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
                 return "ok";
             } else return "Pas assez de points ou de crédits / Ceinture la plus haute";
@@ -311,6 +309,7 @@ public class ControleurMVCRest {
                 Long milli = new Date().getTime();
                 Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
                 examenDao.saveAndFlush(exam);
+
                 System.out.println(compteCourant.calculCredits());
                 //this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
 

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -20,17 +21,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
     private TextView tvErrorMessage;
@@ -41,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvMessagePrivate;
     private Button btnMessagePublic;
     private TextView tvMessagePublic;
+    private RadioButton rbElsewhere;
     private CheckBox cbArbiter;
     private Button btnFightRed;
     private Button btnFightWhite;
@@ -51,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnFailExam;
     private Button btnChangeRole;
 
-    private HashMap<String, Account> accounts = new HashMap<>();
+    private LinkedHashMap<String, Account> accounts = new LinkedHashMap<>();
     private HashMap<String, String> emailLieu = new HashMap<>();
     private Account current;
     private ArrayList<Account> lstArbiters = new ArrayList<>();
@@ -67,9 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView rvWaiting;
     private AccountAdapter adapterWaiting;
 
-    private String connectionId;
-
-    private OkHttpClient client;
+    private HttpConnection httpConnection;
     private StompConnection stompConnection;
 
     private void updateSpinFighters() {
@@ -87,6 +81,30 @@ public class MainActivity extends AppCompatActivity {
 
     private String getCurrentEmail() {
         return getCurrent().getEmail();
+    }
+
+    private void updateLstAccounts(boolean current) {
+        httpConnection.executeRequest(
+                "http://10.0.2.2:8080/lstComptes",
+                (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("La liste des comptes n'a pas pu être retournée")),
+                (call, response) -> {
+                    tvErrorMessage.setText(R.string.ok);
+                    try {
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        updateAccountList(jsonObject, current);
+
+                        MainActivity.this.runOnUiThread(() -> {
+                            updateSpinFighters();
+                            updateRecyclerViews();
+                            if (current) {
+                                updateInfoFighter();
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
     }
 
     private void updateAccountList(JSONObject jsonObject, boolean updateCurrent) throws JSONException {
@@ -144,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //Arrays.sort(lstArbiters);
+
         adapterArbitrators.notifyDataSetChanged();
         adapterElsewhere.notifyDataSetChanged();
         adapterSpectating.notifyDataSetChanged();
@@ -172,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
         btnFailExam = findViewById(R.id.btnExamFail);
         btnChangeRole = findViewById(R.id.btnChangeRole);
         cbArbiter = findViewById(R.id.cbArbiter);
+        rbElsewhere = findViewById(R.id.rbElsewhere);
 
         rvArbitrators = findViewById(R.id.rvArbitrators);
         adapterArbitrators = new AccountAdapter(lstArbiters);
@@ -203,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
 
         RadioGroup rgPlace = findViewById(R.id.rgPlace);
 
+        httpConnection = new HttpConnection();
+
         stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
         // Place
         stompConnection.subChangePlace(stompMessage -> {
@@ -223,35 +246,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        client = new OkHttpClient();
-        Request request = new Request.Builder()
-                .url("http://10.0.2.2:8080/lstComptes")
-                .build();
-
-        Log.i("MainActivity", request.toString());
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                tvErrorMessage.setText("La liste des comptes n'a pas pu être retournée");
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                tvErrorMessage.setText(R.string.ok);
-                try {
-                    JSONObject jsonObject = new JSONObject(response.body().string());
-                    updateAccountList(jsonObject, false);
-
-                    MainActivity.this.runOnUiThread(() -> {
-                        updateSpinFighters();
-                        updateRecyclerViews();
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        updateLstAccounts(false);
 
         // Connexion
         btnConnection.setOnClickListener(v -> {
@@ -259,55 +254,40 @@ public class MainActivity extends AppCompatActivity {
                 btnConnection.setText(R.string.connection_close);
                 spinFighters.setEnabled(false);
 
-                Request request1 = new Request.Builder()
-                        .url("http://10.0.2.2:8080/login/" + getCurrentEmail())
-                        .build();
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/login/" + getCurrentEmail()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Le compte n'a pas pu être connecté")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> {
+                                tvErrorMessage.setText("Le compte est connecté");
+                                current = getCurrent();
+                                current.setSessionId(res);
 
-                client.newCall(request1).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Le compte n'a pas pu être connecté"));
-                    }
-
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        String res = response.body().string();
-
-                        MainActivity.this.runOnUiThread(() -> {
-                            tvErrorMessage.setText("Le compte est connecté");
-                            current = getCurrent();
-                            current.setSessionId(res);
-
-                            updateInfoFighter();
-                        });
-                    }
-                });
+                                updateInfoFighter();
+                            });
+                        }
+                );
             } else {
                 btnConnection.setText(R.string.connection_open);
                 spinFighters.setEnabled(true);
+                rbElsewhere.setChecked(true);
+                cbArbiter.setChecked(false);
 
-                Request request1 = new Request.Builder()
-                        .url("http://10.0.2.2:8080/logout/" + current.getSessionId())
-                        .build();
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/logout/%s", current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Le compte n'a pas pu être déconnecté")),
+                        (call, response) -> {
+                            String res = response.body().string();
 
-                client.newCall(request1).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Le compte n'a pas pu être déconnecté"));
-                    }
+                            MainActivity.this.runOnUiThread(() -> {
+                                tvErrorMessage.setText(res);
+                                current = null;
 
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        String res = response.body().string();
-
-                        MainActivity.this.runOnUiThread(() -> {
-                            tvErrorMessage.setText(res);
-                            current = null;
-
-                            tvInfosFighter.setText(R.string.fighter_info);
-                        });
-                    }
-                });
+                                tvInfosFighter.setText(R.string.fighter_info);
+                            });
+                        }
+                );
             }
         });
 
@@ -326,6 +306,22 @@ public class MainActivity extends AppCompatActivity {
             tvMessagePublic.setText(rep.getString("de") + ", " + creation.toString() + ", " + rep.getString("contenu"));
         });
         stompConnection.subMAJCompte(stompMessage -> {
+            Log.i("MAJCompte", "MAJ des comptes");
+            try {
+                JSONObject jsonObject = new JSONObject(stompMessage.getPayload());
+                updateAccountList(jsonObject, true);
+
+                MainActivity.this.runOnUiThread(() -> {
+                    updateSpinFighters();
+                    updateRecyclerViews();
+                    updateInfoFighter();
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+        stompConnection.subLstComptes(stompMessage -> {
+            Log.i("LstComptes", "MAJ des comptes");
             try {
                 JSONObject jsonObject = new JSONObject(stompMessage.getPayload());
                 updateAccountList(jsonObject, true);
@@ -375,76 +371,92 @@ public class MainActivity extends AppCompatActivity {
 
         // Combat rouge
         btnFightRed.setOnClickListener(v -> {
-            Request request1 = new Request.Builder()
-                    .url("http://10.0.2.2:8080/combat1/" + current.getEmail() + "/" + current.getSessionId())
-                    .build();
-
-            client.newCall(request1).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat rouge impossible"));
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String res = response.body().string();
-                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-
-                    // Refresh liste
-                }
-            });
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/combat1/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    });
         });
         // Combat blanc
         btnFightWhite.setOnClickListener(v -> {
-            Request request1 = new Request.Builder()
-                    .url("http://10.0.2.2:8080/combat2/" + current.getEmail() + "/" + current.getSessionId())
-                    .build();
-
-            client.newCall(request1).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible"));
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String res = response.body().string();
-                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-
-                    // Refresh liste
-                }
-            });
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/combat2/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    });
         });
         // Combat nul
         btnFightTie.setOnClickListener(v -> {
-            Request request1 = new Request.Builder()
-                    .url("http://10.0.2.2:8080/combat3/" + current.getEmail() + "/" + current.getSessionId())
-                    .build();
-
-            client.newCall(request1).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible"));
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    String res = response.body().string();
-                    MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-
-                    // Refresh liste
-                }
-            });
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/combat3/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    });
         });
         // Arbitre rouge
-        btnArbiterRed.setOnClickListener(v -> stompConnection.sendArbiterRed());
+        btnArbiterRed.setOnClickListener(v -> {
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/arbitrer1/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    });
+                });
         // Arbitre rouge avec faute
-        btnArbiterRedFault.setOnClickListener(v -> stompConnection.sendArbiterRedWithFault());
+        btnArbiterRedFault.setOnClickListener(v -> {
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/arbitrer2/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    });
+        });
         // Passer examen
-        btnPassExam.setOnClickListener(v -> stompConnection.sendPassExam());
+        btnPassExam.setOnClickListener(v -> {
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/examen1/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> {
+                            tvErrorMessage.setText(res);
+
+                            stompConnection.sendGetLstComptes();
+                        });
+                    });
+        });
         // Fail exam
-        btnFailExam.setOnClickListener(v -> stompConnection.sendFailExam());
+        btnFailExam.setOnClickListener(v -> {
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/examen2/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> {
+                            tvErrorMessage.setText(res);
+
+                            stompConnection.sendGetLstComptes();
+                        });
+                    });
+        });
         // Changer role
-        btnChangeRole.setOnClickListener(v -> stompConnection.sendChangeRole());
+        btnChangeRole.setOnClickListener(v -> {
+            httpConnection.executeRequest(
+                    String.format("http://10.0.2.2:8080/passage/%s/%s", current.getEmail(), current.getSessionId()),
+                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de changer de role")),
+                    (call, response) -> {
+                        String res = response.body().string();
+                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                    }
+            );
+        });
     }
 }

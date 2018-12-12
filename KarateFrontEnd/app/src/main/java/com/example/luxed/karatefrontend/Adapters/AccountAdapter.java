@@ -57,7 +57,7 @@ public class AccountAdapter extends RecyclerView.Adapter<AccountAdapter.MyViewHo
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
             holder.image.setImageBitmap(decodedByte);
-            holder.info.setText(acc.getFullName() + ", " + acc.getGroupe() + ", " + acc.getGroupe());
+            holder.info.setText(acc.getFullName() + ", " + acc.getGroupe() + ", " + acc.getRole());
         }
     }
 
