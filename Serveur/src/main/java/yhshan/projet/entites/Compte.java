@@ -247,13 +247,13 @@ public class Compte implements UserDetails {
             case 3:points = 20; break;
             case 4:points = 25; break;
             case 5:points = 30; break;
-            case 6:points = 50; break;
+            case 6: case 7: points = 50; break;
             case -1:points = 9; break;
             case -2:points = 7; break;
             case -3:points = 5; break;
             case -4:points = 3; break;
             case -5:points = 2; break;
-            case -6:points = 1; break;
+            case -6: case -7: points = 1; break;
         }
         return points;
     }
@@ -265,13 +265,18 @@ public class Compte implements UserDetails {
         for (Combat comb: lst) { // List of battles where hes white
             if (comb.getCeintureBlanc() == groupe && comb.getPointsBlanc() != 0) {
                 //if his belt of the battle is == to his current belt && gains points
+                //System.out.println("--------- white won -----------");
+                //System.out.println("red = " + comb.getCeintureRouge().getId() + "  white grpId = " + groupe.getId());
 
                 int ecart = comb.getCeintureRouge().getId() - groupe.getId();
                 int ptsGagne = getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
 
-                if(comb.getPointsBlanc() == 5) // else divide by 2
+                //System.out.println("Ecart = " + ecart);
+                if(comb.getPointsBlanc() == 5) { // else divide by 2
                     ptsGagne = ptsGagne >> 1;
-
+                    //System.out.println("draw");
+                }
+                //System.out.println("points won : " + ptsGagne);
                 ptsCourant += ptsGagne;
             }
         }
@@ -280,13 +285,18 @@ public class Compte implements UserDetails {
         for (Combat comb: lst) { // List of battles where hes red
             if (comb.getCeintureRouge() == groupe && comb.getPointsRouge() != 0) {
                 //if his belt of the battle is == to his current belt && gains points
+                //System.out.println("--------- red won -----------");
+                //System.out.println("white = " + comb.getCeintureBlanc().getId() + "   red grpId = " + groupe.getId());
 
                 int ecart = comb.getCeintureBlanc().getId() - groupe.getId();
                 int ptsGagne = getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
 
-                if(comb.getPointsRouge() == 5) // else divide by 2
+                //System.out.println("Ecart = " + ecart);
+                if(comb.getPointsRouge() == 5) { // else divide by 2
                     ptsGagne = ptsGagne >> 1;
-
+                    //System.out.println("draw");
+                }
+                //System.out.println("points won : " + ptsGagne);
                 ptsCourant += ptsGagne;
             }
         }
