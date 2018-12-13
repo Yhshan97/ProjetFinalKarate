@@ -371,92 +371,100 @@ public class MainActivity extends AppCompatActivity {
 
         // Combat rouge
         btnFightRed.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/combat1/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-                    });
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/combat1/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        });
         });
         // Combat blanc
         btnFightWhite.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/combat2/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-                    });
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/combat2/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        });
         });
         // Combat nul
         btnFightTie.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/combat3/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-                    });
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/combat3/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        });
         });
         // Arbitre rouge
         btnArbiterRed.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/arbitrer1/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-                    });
-                });
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/arbitrer1/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        });
+        });
         // Arbitre rouge avec faute
         btnArbiterRedFault.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/arbitrer2/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-                    });
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/arbitrer2/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Combat blanc impossible")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        });
         });
         // Passer examen
         btnPassExam.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/examen1/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> {
-                            tvErrorMessage.setText(res);
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/examen1/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> {
+                                tvErrorMessage.setText(res);
 
-                            stompConnection.sendGetLstComptes();
+                                stompConnection.sendGetLstComptes();
+                            });
                         });
-                    });
         });
         // Fail exam
         btnFailExam.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/examen2/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> {
-                            tvErrorMessage.setText(res);
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/examen2/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de faire l'examen")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> {
+                                tvErrorMessage.setText(res);
 
-                            stompConnection.sendGetLstComptes();
+                                stompConnection.sendGetLstComptes();
+                            });
                         });
-                    });
         });
         // Changer role
         btnChangeRole.setOnClickListener(v -> {
-            httpConnection.executeRequest(
-                    String.format("http://10.0.2.2:8080/passage/%s/%s", current.getEmail(), current.getSessionId()),
-                    (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de changer de role")),
-                    (call, response) -> {
-                        String res = response.body().string();
-                        MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
-                    }
-            );
+            if (current != null)
+                httpConnection.executeRequest(
+                        String.format("http://10.0.2.2:8080/passage/%s/%s", current.getEmail(), current.getSessionId()),
+                        (call, e) -> MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText("Impossible de changer de role")),
+                        (call, response) -> {
+                            String res = response.body().string();
+                            MainActivity.this.runOnUiThread(() -> tvErrorMessage.setText(res));
+                        }
+                );
         });
     }
 }
