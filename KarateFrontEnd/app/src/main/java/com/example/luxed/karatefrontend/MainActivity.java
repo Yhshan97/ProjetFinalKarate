@@ -122,11 +122,12 @@ public class MainActivity extends AppCompatActivity {
                     obj.getInt("credits"));
 
             if (updateCurrent && acc.getEmail().equals(current.getEmail())) {
+                Log.i("UpdateCurrent", obj.toString());
                 String sessionId = current.getSessionId();
-                Log.i("UpdateCurrent", "Current: " + current.getCredits());
+                Log.i("UpdateCurrent", "Current: " + current.getPoints() + ", " + current.getCredits());
                 current = acc;
                 current.setSessionId(sessionId);
-                Log.i("UpdateCurrent", "Current: " + acc.getCredits());
+                Log.i("UpdateCurrent", "Current: " + current.getPoints() + ", " + current.getCredits());
             }
 
             accounts.put(acc.getEmail(), acc);
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateInfoFighter() {
         Log.i("UpdateInfo", "Info update");
+        Log.i("UpdateInfo", "New info: " + current.getPoints() + ", " + current.getCredits());
         tvInfosFighter.setText(current.getFullName() + ", " + current.getGroupe() + ", " + current.getRole() +
                 ", points: " + current.getPoints() + ", credits: " + current.getCredits());
     }
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
         stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
         // Place
         stompConnection.subChangePlace(stompMessage -> {
-            Log.i("ChangePlace", stompMessage.getPayload());
+            //Log.i("ChangePlace", stompMessage.getPayload());
             JSONObject obj = new JSONObject(stompMessage.getPayload());
             emailLieu.clear();
             obj.keys().forEachRemaining(key -> {

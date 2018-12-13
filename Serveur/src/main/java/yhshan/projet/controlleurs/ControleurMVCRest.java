@@ -310,7 +310,8 @@ public class ControleurMVCRest {
                 Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
                 examenDao.saveAndFlush(exam);
 
-                System.out.println(compteCourant.calculCredits());
+                System.out.println("Credits: " + compteCourant.calculCredits());
+                System.out.println("Points: " + compteCourant.calculPoints());
                 //this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
 
                 return "ok";
