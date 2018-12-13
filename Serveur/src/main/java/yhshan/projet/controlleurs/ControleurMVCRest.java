@@ -309,10 +309,11 @@ public class ControleurMVCRest {
                 Long milli = new Date().getTime();
                 Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
                 examenDao.saveAndFlush(exam);
-
+                compteCourant.getEvalues().add(exam);
+                compteDao.saveAndFlush(compteCourant);
                 System.out.println("Credits: " + compteCourant.calculCredits());
                 System.out.println("Points: " + compteCourant.calculPoints());
-                //this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
+                this.template.convertAndSend("/sujet/MAJCompte", listeComptes());
 
                 return "ok";
             } else return "Pas assez de points ou de crédits / Ceinture la plus haute";

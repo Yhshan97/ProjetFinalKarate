@@ -452,7 +452,7 @@ public class MainActivity extends AppCompatActivity {
                             MainActivity.this.runOnUiThread(() -> {
                                 tvErrorMessage.setText(res);
 
-                                stompConnection.sendGetLstComptes();
+                                //stompConnection.sendGetLstComptes();
                             });
                         });
         });
