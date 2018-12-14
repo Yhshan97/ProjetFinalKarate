@@ -23,6 +23,7 @@ import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.util.*;
 
+import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;
 
 @RestController
@@ -376,9 +377,9 @@ public class ControleurMVCRest {
 
         compteDao.transferrer(roleDao.getOne(compte.getRole().getIdRole() + 1),id);
     }
+*/
 
-
-    //@MessageMapping("/connectedToKumite")
+    @MessageMapping("/connectedToKumite")
     @SendTo("/sujet/connect")
     private void connected(){
 
@@ -388,17 +389,16 @@ public class ControleurMVCRest {
         module.addSerializer(Compte.class, new CompteSerializer());
         mapper.registerModule(module);
 
+        if(listeDesConnexions.size() == 3)
         th = new Thread(() -> {
             while(!currentThread().isInterrupted()){
                 try {
-                    listeConnected.clear();
-                    this.template.convertAndSend("/sujet/keepConnected","");
+                    //listeConnected.clear();
+                    //this.template.convertAndSend("/sujet/keepConnected","");
 
                     sleep(5000);
 
-                    if(listeConnected.size() == 0)
-                        Thread.currentThread().interrupt();
-
+                    /*
                     try {
                         for (int x = 0; x < listeConnected.size(); x++)
                         for (int y = 0; y < listeConnected.size(); y++)
@@ -409,18 +409,19 @@ public class ControleurMVCRest {
                                 System.out.println("Le compte '" + listeConnected.get(x).getUsername() + "' est connecté deux fois !");
                             }
                     }catch(Exception e){System.out.println(e.getMessage());}
-
+                    */
                     //Transform compte to objectJson
-                    List<String> listeComptesJSON = new ArrayList<>();
-                    for (Compte user: listeConnected)
-                        listeComptesJSON.add(mapper.writeValueAsString(user));
+                    //List<String> listeComptesJSON = new ArrayList<>();
+                    //for (Compte user: listeConnected)
+                    //    listeComptesJSON.add(mapper.writeValueAsString(user));
 
-                    this.template.convertAndSend("/sujet/receiveList",listeComptesJSON);
+                    if(listeDesConnexions.size() < 3)
+                        currentThread().interrupt();
 
+                    //this.template.convertAndSend("/sujet/receiveList",listeComptesJSON);
                     //Send infos combat (who vs who / )
+
                     returnInfoCombat();
-                } catch (InterruptedException e) {
-                    currentThread().interrupt();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -428,20 +429,20 @@ public class ControleurMVCRest {
         });
     }
 
-*/
+
     private void returnInfoCombat() {
         List<Compte> listCombattants = new ArrayList<>();
         List<Compte> listArbitres = new ArrayList<>();
 
-/*
-        for (Compte compte : listeConnected){
-            if(compte.getPosition().equals("combattant"))
-                listCombattants.add(compte);
+        //Put comptes into their proper list
+        for (String compte : lstPositions.keySet()){
+            if(Objects.equals(lstPositions.get(compte), "attente")) // to verify
+                listCombattants.add(compteDao.findById(compte).get());
 
-            else if(compte.getPosition().equals("arbitre"))
-                listArbitres.add(compte);
+            else if(Objects.equals(lstPositions.get(compte), "arbitre")) //to verify
+                listArbitres.add(compteDao.findById(compte).get());
         }
-*/
+
         if (listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat) {
             Random rand = new Random();
 
@@ -451,7 +452,7 @@ public class ControleurMVCRest {
             while (random == random2)
                 random2 = rand.nextInt(listCombattants.size());
 
-            compteGauche = compteDao.getOne(listCombattants.get(random).getUsername());
+            compteGauche = listCombattants.get(random);
             String nomGauche = compteGauche.getUsername();
             String avatarGauche = compteGauche.getAvatar().getAvatar();
 
