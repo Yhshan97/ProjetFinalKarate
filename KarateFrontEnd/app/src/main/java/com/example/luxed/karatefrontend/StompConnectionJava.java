@@ -14,7 +14,7 @@ import ua.naiksoftware.stomp.Stomp;
 import ua.naiksoftware.stomp.client.StompClient;
 import ua.naiksoftware.stomp.client.StompMessage;
 
-public class StompConnection {
+public class StompConnectionJava {
     public enum FightType {
         Red, White, Tie
     }
@@ -25,7 +25,7 @@ public class StompConnection {
 
     private StompClient client;
 
-    public StompConnection(String url) {
+    public StompConnectionJava(String url) {
         client = Stomp.over(Stomp.ConnectionProvider.OKHTTP, url);
 
         /*Disposable dis = client.lifecycle().subscribe(lifecycle -> {

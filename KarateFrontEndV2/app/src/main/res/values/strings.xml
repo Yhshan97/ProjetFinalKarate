@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">KarateFrontEndV2</string>
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+    <string name="nav_header_title" translatable="false">Android Studio</string>
+    <string name="nav_header_subtitle" translatable="false">android.studio@android.com</string>
+    <string name="nav_header_desc" translatable="false">Navigation header</string>
+    <string name="action_settings" translatable="false">Settings</string>
+
+    <string name="connection">Connection</string>
+    <string name="messages">Messages</string>
+    <string name="connection_open">Open connection</string>
+    <string name="connection_close">Close connection</string>
+    <string name="fighter_info">Fighter information</string>
+    <string name="message_private">Private message</string>
+    <string name="message_public">Public message</string>
+    <string name="elsewhere">Elsewhere</string>
+    <string name="elsewhere_list">Elsewhere :</string>
+    <string name="spectator">Spectator</string>
+    <string name="spectator_list">Spectators :</string>
+    <string name="waiting">Waiting</string>
+    <string name="waiting_list">Waiting :</string>
+    <string name="arbitrator">Arbitrator</string>
+    <string name="arbitrator_list">Arbitrators :</string>
+    <string name="fight">Fight</string>
+    <string name="fight_red">Fight red</string>
+    <string name="fight_white">Fight white</string>
+    <string name="fight_tie">Fight tie</string>
+    <string name="arbiter_red">Arbiter red</string>
+    <string name="arbiter_red_fault">Arbiter red with fault</string>
+    <string name="exam_pass">Pass exam</string>
+    <string name="exam_fail">Fail exam</string>
+    <string name="change_role">Change role</string>
+</resources>
