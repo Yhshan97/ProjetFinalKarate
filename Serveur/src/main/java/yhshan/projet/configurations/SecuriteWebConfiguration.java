@@ -26,8 +26,9 @@ public class SecuriteWebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/grades").hasAnyAuthority("SENSEI","VENERABLE")
+        http.authorizeRequests()//.antMatchers("/grades").hasAnyAuthority("SENSEI","VENERABLE")
                 //.antMatchers("/kumite","/grades").authenticated()
+                .antMatchers("/grades").authenticated()
                 .antMatchers("/**").permitAll()
                 .anyRequest()
                 .authenticated()

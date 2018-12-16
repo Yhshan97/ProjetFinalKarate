@@ -31,7 +31,7 @@
     <br/><br/>
     <div sec:authorize="hasAnyAuthority('NOUVEAU','ANCIEN')">
         <br/><br/>
-        <p> Vous n'avez pas la permission d'accéder à cette page. </p>
+        <h2> Vous n'avez pas la permission d'accéder à cette page. </h2>
     </div>
 
     <input type="hidden" id="idConnectedUsername" th:value="${connectedUser.getUsername()}"/>
@@ -65,27 +65,6 @@
                         <td><button class="btn btn-primary passeBtn" th:value="${compteAdmissible.getUsername()}" onclick="passer(this)">Passer</button></td>
                         <td><button class="btn btn-danger passeBtn"  th:value="${compteAdmissible.getUsername()}" onclick="couler(this)">Couler</button></td>
                     </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="panel panel-default">
-            <div class="panel-heading"><h2>Liste des membres dans la honte</h2></div>
-            <div class="panel-body">
-                <table class="table" style="width: 100%" id="tabHonte">
-                    <thead class="">
-                    <tr>
-                        <th scope="col"><h2>Avatar</h2></th>
-                        <th scope="col"><h2>Courriel</h2></th>
-                        <th scope="col"><h2>Alias</h2></th>
-                        <th scope="col"><h2>Ceinture</h2></th>
-                        <th scope="col"><h2>Points</h2></th>
-                        <th scope="col"><h2>Crédits</h2></th>
-                        <th scope="col"></th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
                     <tr th:each="compteAdmissible : ${hontes}" style="height:100px;" th:id="${compteAdmissible.getUsername()}"
                         th:if="${compteAdmissible.getGroupe().getId() < 7 && compteAdmissible.isHonte() && !compteAdmissible.getUsername().equals(connectedUser.getUsername())}" class="enHonte">
                         <td style="padding-right: 15px"><img th:src="${compteAdmissible.getAvatar().getAvatar()}" style="width: 60px;height: 60px;"></td>
@@ -101,6 +80,7 @@
                 </table>
             </div>
         </div>
+
 <!--
         <div class="panel panel-default">
             <div class="panel-heading"><h2>Liste des proche au rôle ancien</h2></div>

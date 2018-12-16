@@ -4,10 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import yhshan.projet.dao.AvatarDao;
+import yhshan.projet.entites.Combat;
 import yhshan.projet.entites.Compte;
-import yhshan.projet.entites.Groupe;
 
 import java.util.Collection;
+import java.util.Set;
 
 public class MonUserPrincipal implements UserDetails {
 
@@ -22,6 +23,20 @@ public class MonUserPrincipal implements UserDetails {
         else
             this.compte = new Compte();
     }
+
+    public Set<Combat> test(){ return compte.getBlancs(); }
+
+    public int getPoints(){ return compte.calculPoints(); }
+
+    public int getCredits(){ return compte.calculCredits(); }
+
+    public String getAlias(){ return compte.getFullname(); }
+
+    public String getAvatar(){ return compte.getAvatar().getAvatar();}
+
+    public String getRole() { return compte.getRole().getRole();}
+
+    public String getGroupe(){ return compte.getGroupe().getGroupe(); }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

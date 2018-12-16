@@ -265,44 +265,31 @@ public class Compte implements UserDetails {
         Set<Combat> lst = blancs;
 
         for (Combat comb: lst) { // List of battles where hes white
-            if (comb.getCeintureBlanc() == groupe && comb.getPointsBlanc() != 0) {
-                //if his belt of the battle is == to his current belt && gains points
-                //System.out.println("--------- white won -----------");
-                //System.out.println("red = " + comb.getCeintureRouge().getId() + "  white grpId = " + groupe.getId());
+            if (comb.getCeintureBlanc().getId().equals(groupe.getId()) && comb.getPointsBlanc() != 0) {
 
                 int ecart = comb.getCeintureRouge().getId() - groupe.getId();
                 int ptsGagne = getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
 
-                //System.out.println("Ecart = " + ecart);
                 if(comb.getPointsBlanc() == 5) { // else divide by 2
                     ptsGagne = ptsGagne >> 1;
-                    //System.out.println("draw");
                 }
-                //System.out.println("points won : " + ptsGagne);
                 ptsCourant += ptsGagne;
             }
         }
 
         lst = rouges;
         for (Combat comb: lst) { // List of battles where hes red
-            if (comb.getCeintureRouge() == groupe && comb.getPointsRouge() != 0) {
-                //if his belt of the battle is == to his current belt && gains points
-                //System.out.println("--------- red won -----------");
-                //System.out.println("white = " + comb.getCeintureBlanc().getId() + "   red grpId = " + groupe.getId());
-
+            if (comb.getCeintureRouge().getId().equals(groupe.getId()) && comb.getPointsRouge() != 0) {
                 int ecart = comb.getCeintureBlanc().getId() - groupe.getId();
                 int ptsGagne = getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
 
-                //System.out.println("Ecart = " + ecart);
                 if(comb.getPointsRouge() == 5) { // else divide by 2
                     ptsGagne = ptsGagne >> 1;
-                    //System.out.println("draw");
                 }
-                //System.out.println("points won : " + ptsGagne);
+
                 ptsCourant += ptsGagne;
             }
         }
-
         return ptsCourant;
     }
 

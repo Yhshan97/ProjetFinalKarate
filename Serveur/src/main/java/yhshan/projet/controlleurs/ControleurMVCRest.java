@@ -218,22 +218,26 @@ public class ControleurMVCRest {
                             listArbitres.add(compteDao.findById(compte).get());
                     }
 
-                    if(listCombattants.size() < 2 || listArbitres.size() < 1)
+                    if(listCombattants.size() < 2 || listArbitres.size() < 1) {
                         currentThread().interrupt();
+                        break;
+                    }
 
                     System.out.println("Inside loop 2");
+
                     sleep(5000);
                     returnInfoCombat(listCombattants,listArbitres); // choose fighters
                     System.out.println("Inside loop 3");
+
                     sleep(2000);
                     // randomise attack left and right and send
                     randomiseAttacks();
                     System.out.println("Inside loop 4");
+
                     sleep(2000);
                     // send winner (check if venerable then he auto wins..)
                     //save fight and reset variables
                     returnResultatCombat();
-
                     resetCombatState();
 
                 } catch (Exception e) {
@@ -241,7 +245,7 @@ public class ControleurMVCRest {
                 }
             }
         });
-        if(listeDesConnexions.size() >= 3 && !th.isAlive() && th.isInterrupted())
+        if(listeDesConnexions.size() >= 3)
             th.start();
     }
 
@@ -256,12 +260,13 @@ public class ControleurMVCRest {
 
         String strJSONResultat =
                 "{ \"attaqueGauche\" : \"" + gaucheAttaque + "\"," +
-                        " \"attaqueDroite\" : \"" + droiteAttaque + "\" " + //," +
-                       // " \"resultatCombat\" : \"" + resultat + "\"," +
+                        " \"attaqueDroite\" : \"" + droiteAttaque + "\" " + "}";
+                        //," +
+                        //" \"resultatCombat\" : \"" + resultat + "\"," +
                         //" \"nomGauche\" : \"" + compteGauche.getUsername() + "\"," +
                         //" \"nomDroite\" : \"" + compteDroite.getUsername() + "\"," +
                         //" \"nomArbitre\" : \"" + compteArbitre.getUsername() + "\"" +
-                        "}";
+
         System.out.println(strJSONResultat);
         this.template.convertAndSend("/sujet/ChoixCombat",strJSONResultat);
 
@@ -269,7 +274,6 @@ public class ControleurMVCRest {
 
 
     private void returnInfoCombat(List<Compte> listCombattants, List<Compte> listArbitres) {
-
 
         if (listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat) {
             Random rand = new Random();

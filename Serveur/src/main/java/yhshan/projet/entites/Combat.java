@@ -134,13 +134,6 @@ public class Combat {
     public String toString() {
         return "Combat{" +
                 "id=" + id +
-                ", date=" + date +
-                ", arbitre=" + arbitre +
-                ", rouge=" + rouge +
-                ", blanc=" + blanc +
-                ", ceintureRouge=" + ceintureRouge +
-                ", ceintureBlanc=" + ceintureBlanc +
-                ", creditsArbitre=" + creditsArbitre +
                 ", pointsBlanc=" + pointsBlanc +
                 ", pointsRouge=" + pointsRouge +
                 '}';
