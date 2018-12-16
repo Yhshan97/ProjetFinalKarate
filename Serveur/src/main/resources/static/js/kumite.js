@@ -8,29 +8,24 @@ $(function () {
 
     stompClient.connect({}, function () {
 
-        stompClient.send("/app/receive", {position: getPosition()}, $("#nomUtil").val());
+        stompClient.send('/app/getLstWeb');
 
-        stompClient.subscribe("/sujet/keepConnected", function () {
-            stompClient.send("/app/receive", {position: getPosition()}, $("#nomUtil").val());
-        });
-
-
-        stompClient.subscribe('/sujet/receiveList', function (liste) {
-            var listeComptes = JSON.parse(liste.body);
+        stompClient.subscribe('/sujet/lstComptesWeb', function (liste) {
+            var listeComptes = JSON.parse(liste.body).comptes;
 
             $("#bodyArbitres,#bodyCombattants,#bodySpectateurs").text("");
 
-            listeComptes.forEach(function (compteJson) {
-                var compte = JSON.parse(compteJson);
-                var strAppend = "<div class='pull-left' style='margin:2px'><img src=\"" + compte.avatar + "\" style='width: 45px'></div>";
+            listeComptes.forEach(function (objet) {
+                var position = objet.position;
+                var avatar = objet.avatar;
+                var strAppend = "<div class='pull-left' style='margin:2px'><img src=\"" + avatar + "\" style='width: 45px'></div>";
 
-                if (compte.position === "spectateur")
+                if (position === "spectateur")
                     $("#bodySpectateurs").append(strAppend);
-                else if (compte.position === "combattant")
+                else if (position === "attente")
                     $("#bodyCombattants").append(strAppend);
-                else if (compte.position === "arbitre")
+                else if (position === "arbitre")
                     $("#bodyArbitres").append(strAppend);
-
             })
         });
 
@@ -45,6 +40,7 @@ $(function () {
             $("#avatarDroite").attr("src" ,messageJSON.droiteAvatar === "null" ? "images/noprofile.jpeg" : messageJSON.droiteAvatar);
 
             if(messageJSON.gaucheAvatar !== "null"){
+                /*
                 if(messageJSON.gaucheNom === nomUtilis){
                     spanInfo.text("Vous êtes à gauche..").fadeIn();
                     $('div label').addClass('disabled');
@@ -57,6 +53,7 @@ $(function () {
                     spanInfo.text("Vous êtes l'arbitre..").fadeIn();
                     $('div label').addClass('disabled');
                 }
+                */
 
                 if(counter === 10){
                 interval = setInterval(function() {
@@ -95,6 +92,7 @@ $(function () {
             }
         });
 
+        /*
         stompClient.subscribe("/sujet/resultatCombat",function(message){
             var jsonObj = JSON.parse(message.body);
             var gaucheAttaque = $("#gaucheAttaque");
@@ -172,7 +170,7 @@ $(function () {
             $('div label').removeClass('disabled');
 
             counter = 10;
-        });
+        });*/
     });
 });
 

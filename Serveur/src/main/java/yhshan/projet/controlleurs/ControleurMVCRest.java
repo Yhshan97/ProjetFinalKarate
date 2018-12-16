@@ -113,6 +113,7 @@ public class ControleurMVCRest {
 
         else if (listeDesConnexions.get(courriel).equals(session)) {
             lstPositions.put(courriel, position);
+            listeComptesWeb();
             combatLoop();
         }
 
@@ -128,11 +129,26 @@ public class ControleurMVCRest {
         return listeComptes();
     }
 
+    @MessageMapping("/getLstWeb")
+    public void listeComptesWeb() {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Compte.class, new CompteSerializer());
+        mapper.registerModule(module);
+
+        List<String> listeComptesJSON = new ArrayList<>();
+        for (String username : listeDesConnexions.keySet()) {
+            Optional<Compte> compte = compteDao.findById(username);
+            String infoCompte = "{ \"avatar\" : \"" + compte.get().getAvatar().getAvatar() +
+                    "\", \"position\" : \"" + lstPositions.get(username) + "\" }";
+            listeComptesJSON.add(infoCompte);
+        }
+        this.template.convertAndSend("/sujet/lstComptesWeb", "{ \"comptes\" : [" + String.join(",", listeComptesJSON) + "] }");
+    }
 
     /*
      *  Login / logout
      */
-
 
     @RequestMapping(value = "/login/{courriel}", method = RequestMethod.GET)
     public String login(@PathVariable("courriel") String courriel, HttpSession session) {
@@ -225,7 +241,7 @@ public class ControleurMVCRest {
 
                     System.out.println("Inside loop 2");
 
-                    sleep(5000);
+                    sleep(1000);
                     returnInfoCombat(listCombattants,listArbitres); // choose fighters
                     System.out.println("Inside loop 3");
 
@@ -236,9 +252,13 @@ public class ControleurMVCRest {
 
                     sleep(2000);
                     // send winner (check if venerable then he auto wins..)
-                    //save fight and reset variables
                     returnResultatCombat();
+
+                    sleep(2000);
+                    //save fight and reset variables
                     resetCombatState();
+                    sleep(2000);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -253,20 +273,13 @@ public class ControleurMVCRest {
             return;
 
         Random rand = new Random();
-        //1 = rock, 2= paper, 3= scissors
+        //0 = rock, 1= paper, 2= scissors
         gaucheAttaque = rand.nextInt(3);
         droiteAttaque = rand.nextInt(3);
 
         String strJSONResultat =
-                "{ \"attaqueGauche\" : " + gaucheAttaque + "," +
-                        " \"attaqueDroite\" : " + droiteAttaque + "}";
-                        //," +
-                        //" \"resultatCombat\" : \"" + resultat + "\"," +
-                        //" \"nomGauche\" : \"" + compteGauche.getUsername() + "\"," +
-                        //" \"nomDroite\" : \"" + compteDroite.getUsername() + "\"," +
-                        //" \"nomArbitre\" : \"" + compteArbitre.getUsername() + "\"" +
+                "{ \"attaqueGauche\" : " + gaucheAttaque + "," + " \"attaqueDroite\" : " + droiteAttaque + "}";
 
-        System.out.println(strJSONResultat);
         this.template.convertAndSend("/sujet/ChoixCombat",strJSONResultat);
 
     }
@@ -337,7 +350,7 @@ public class ControleurMVCRest {
             ptsDroiteGain = 5;
         }
 
-        this.template.convertAndSend("/sujet/resultCombat", "{ result : \""+ result + "\" }");
+        this.template.convertAndSend("/sujet/resultCombat", "{ \"result\" : \""+ result + "\" }");
 
         Long milli = new Date().getTime();
         //blanc = gauche
@@ -345,6 +358,9 @@ public class ControleurMVCRest {
         Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
                 compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
         combatDao.saveAndFlush(combat);
+        this.template.convertAndSend("/sujet/resultCombat", "{ \"result\" : \""+ result + "\" }");
+        listeComptesWeb();
+        listeComptes();
     }
 
     private void resetCombatState(){
@@ -403,13 +419,28 @@ public class ControleurMVCRest {
      * Prototype ONLY functions
      */
 
-    //@GetMapping("/")
-    HashMap<String, String> uid() {
+    @GetMapping("/test")
+    String uid() {
+
+
+        lstPositions.put("b14@dojo","spectateur");
+        lstPositions.put("v1@dojo","arbitre");
+        lstPositions.put("b39@dojo","attente");
+        lstPositions.put("b6@dojo","attente");
+        lstPositions.put("b18@dojo","attente");
+        lstPositions.put("b16@dojo","spectateur");
+        lstPositions.put("b31@dojo","arbitre");
+        lstPositions.put("b21@dojo","attente");
+        combatLoop();
         System.out.println(lstPositions.toString());
-        randomiseAttacks();
-        returnResultatCombat();
         return null;
     }
+
+
+
+
+
+
 
     @RequestMapping(value = "/combat1/{courriel}/{session}", method = RequestMethod.GET)
     public String combat1(@PathVariable("session") String session, @PathVariable("courriel") String courriel) {
