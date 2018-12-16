@@ -21,7 +21,6 @@ public class MonUserPrincipal implements UserDetails {
             this.compte = compte;
         else
             this.compte = new Compte();
-        System.out.println(compte.toString());
     }
 
     @Override
@@ -40,7 +39,6 @@ public class MonUserPrincipal implements UserDetails {
     public boolean isCredentialsNonExpired() { return compte.isCredentialsNonExpired(); }
     @Override
     public boolean isEnabled() { return compte.isEnabled(); }
-
     @Override
     public String toString() {
         return "Compte{" +

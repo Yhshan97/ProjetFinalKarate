@@ -9,6 +9,7 @@ import yhshan.projet.dao.*;
 import yhshan.projet.entites.Combat;
 import yhshan.projet.entites.Compte;
 
+import java.util.Date;
 import java.util.List;
 
 @SpringBootApplication
@@ -32,17 +33,14 @@ public class ProjetApplication implements CommandLineRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private CombatDao combatDao;
 */
     @Override
     public void run(String... args)throws Exception{
-
-        /*Compte compte1 = new Compte("a", "a_a", passwordEncoder.encode("a"), 0, 0,0,
-        new Long(000), avatarDao.getOne(23), roledao.getOne(1),groupedao.getOne(1), null, null,
-                null, null, null);
 /*
+        Compte compte1 = new Compte("a", "a_a", passwordEncoder.encode("a"), 0, 0,0,
+        new Date().getTime(), avatarDao.getOne(23), roledao.getOne(1),groupedao.getOne(1), null, null,
+                null, null, null);
+
         Compte compte2 = new Compte("b",passwordEncoder.encode("b"),"Compte B",
                 avatarDao.getOne(4),roledao.getOne(3),groupedao.getOne(1));
 
@@ -53,7 +51,8 @@ public class ProjetApplication implements CommandLineRunner {
                 avatarDao.getOne(3),roledao.getOne(3),groupedao.getOne(1));
 
 
-        //comptedao.save(compte1);
+        comptedao.save(compte1);
+*/
         /*
         comptedao.save(compte2);
         comptedao.save(compte3);

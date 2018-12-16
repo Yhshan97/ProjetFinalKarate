@@ -57,22 +57,15 @@ public class ControleurMVC {
     public String kumite(Model model) {
         return "prive/kumite";
     }
-/*
+
     @RequestMapping(value = "/grades", method = RequestMethod.GET)
     public String grades(Model model) {
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean userAuth = authentication.getPrincipal() instanceof MonUserPrincipal;
-        Compte connected = null;
-
-        if(userAuth){
-            MonUserPrincipal user = (MonUserPrincipal) authentication.getPrincipal();
-            connected = compteDao.getOne(user.getUsername());
-        }
-
         //Liste des nouveaux qui sont proches de devenir des anciens
+        /*
         List<Compte> lstNouveaux = new ArrayList<>();
         List<Integer> lstNbCombatsNouveaux = new ArrayList<>();
+
         for(Compte compt : Objects.requireNonNull(roleDao.getOne(3).getComptes())){
             List<Combat> lst = combatDao.findAllByArbitre(compt.getCourriel());
             if(lst.size() > 20 && compt.getCredits() > 9){
@@ -80,8 +73,11 @@ public class ControleurMVC {
                 lstNbCombatsNouveaux.add(lst.size());
             }
         }
+        */
+
 
         //Liste des anciens qui ont une ceinture noire
+        /*
         List<Compte> lstAnciens = new ArrayList<>();
         for(Compte cmp : Objects.requireNonNull(roleDao.getOne(2).getComptes())){
             if(cmp.getGroupe().getNomGroupe().equals("NOIRE"))
@@ -91,20 +87,40 @@ public class ControleurMVC {
             if(cmp.getGroupe().getNomGroupe().equals("NOIRE"))
                 lstAnciens.add(cmp);
         }
+        */
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean userAuth = authentication.getPrincipal() instanceof MonUserPrincipal;
+        Compte connected = null;
+
+        if(userAuth){
+            MonUserPrincipal user = (MonUserPrincipal) authentication.getPrincipal();
+            connected = compteDao.getOne(user.getUsername());
+        }
+
+        List<Compte> lstAdmissibles = new ArrayList<>();
+        List<Compte> lstHonte = new ArrayList<>();
+
+        for (Compte compte: compteDao.findAll()) {
+            if (compte.getGroupe().getId() < 7 && compte.calculPoints() >= 100 && compte.calculCredits() >= 10) {
+                if (!compte.isHonte())
+                    lstAdmissibles.add(compte);
+                else if (compte.isHonte())
+                    lstHonte.add(compte);
+            }
+        }
 
 
-
-        model.addAttribute("admissibles",compteDao.findByPointsAndCreditsGreaterThan(100,9));
-        model.addAttribute("nouveaux",lstNouveaux);
-        model.addAttribute("nbCombatNouveaux",lstNbCombatsNouveaux);
-        model.addAttribute("anciens",lstAnciens);
+        model.addAttribute("admissibles",lstAdmissibles);
+        model.addAttribute("hontes",lstHonte);
         model.addAttribute("connectedUser",connected);
-
+        //model.addAttribute("nouveaux",lstNouveaux);
+        //model.addAttribute("nbCombatNouveaux",lstNbCombatsNouveaux);
+        //model.addAttribute("anciens",lstAnciens);
 
         return "prive/grades";
     }
 
-    */
+
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public String login(Map<String, Object> model) { return "public/login"; }

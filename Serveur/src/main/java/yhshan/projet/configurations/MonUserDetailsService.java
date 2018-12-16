@@ -34,16 +34,8 @@ public class MonUserDetailsService implements UserDetailsService {
         Optional<Compte> compte = compteDao.findById(nom);
 
         Compte c = null;
-        if (compte.isPresent()) {
-            c = compte.get();
-            System.out.println("Test 1");
-        }
-        else
-        {
-            System.out.println("Test 2");
-            c = new Compte();
-        }
-        //System.out.println(c.toString());
+        c = compte.orElseGet(Compte::new);
+
         return new MonUserPrincipal(c);
     }
 }

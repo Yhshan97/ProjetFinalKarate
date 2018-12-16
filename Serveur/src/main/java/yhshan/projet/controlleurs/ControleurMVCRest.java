@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import yhshan.projet.CompteSerializer;
 import yhshan.projet.LieuxMessage;
@@ -364,6 +365,32 @@ public class ControleurMVCRest {
         this.template.convertAndSend("/sujet/infoCombat",strJSON);
     }
 
+    /*
+     *  Passage de grades
+     */
+
+    @RequestMapping(value = "/passer/{id}", method = RequestMethod.GET)
+    public void passerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
+        Compte compteCourant = compteDao.getOne(id);
+        Compte evaluateur = compteDao.getOne(compteLogged.getUsername());
+
+        Long milli = new Date().getTime();
+        Examen exam = new Examen(milli, true, compteCourant.getGroupe(), evaluateur, compteCourant);
+        compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
+        examenDao.saveAndFlush(exam);
+        compteDao.saveAndFlush(compteCourant);
+    }
+
+    @RequestMapping(value = "/couler/{id}", method = RequestMethod.GET)
+    public void coulerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
+        Compte compteCourant = compteDao.getOne(id);
+        Compte evaluateur = compteDao.getOne(compteLogged.getUsername());
+
+        Long milli = new Date().getTime();
+        Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
+        examenDao.saveAndFlush(exam);
+        compteDao.saveAndFlush(compteCourant);
+    }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////// to be deleted section
@@ -783,22 +810,6 @@ public class ControleurMVCRest {
     @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
     public String getAvatarUser(@PathVariable("id") String id){ return compteDao.getOne(id).getAvatar().getAvatar(); }
 
-    @RequestMapping(value = "/passer/{id}", method = RequestMethod.GET)
-    public void passerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
-
-        Compte compte = compteDao.getOne(id);
-        compteDao.passer(compte.getCredits() - 10,0,groupeDao.getOne(compte.getGroupe().getId() + 1),id);
-        compteDao.couler(compte.getCredits() - 10,false,id);
-        examenDao.save(new Examen(compte.getCourriel(),compteLogged.getUsername(),"Reussite"));
-    }
-
-    @RequestMapping(value = "/couler/{id}", method = RequestMethod.GET)
-    public void coulerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
-
-        Compte compte = compteDao.getOne(id);
-        compteDao.couler(compte.getCredits() - 5,true,id);
-        examenDao.save(new Examen(compte.getCourriel(),compteLogged.getUsername(),"Echec"));
-    }
 
     @RequestMapping(value = "/transferrer/{id}", method = RequestMethod.GET)
     public void transferrerUtil(@PathVariable("id") String id){

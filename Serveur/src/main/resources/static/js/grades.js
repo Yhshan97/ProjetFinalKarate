@@ -13,26 +13,13 @@ function remove(obj){
     row.parentNode.removeChild(row);
 }
 
-function transferrer(obj){
-    reqAjax("transferrer",obj);
-    remove(obj);
-}
-
-function toggle(obj){
-    if($('#toggle-sensei').prop('checked')){
-        reqAjax("transferrer",obj);
-    }
-    else {
-        reqAjax("enleverSensei",obj);
-    }
-}
-
-
 function reqAjax(destination,obj) {
+    var userConnected = $("idConnectedUsername").val();
+
     $.ajax(
         {
             type: 'GET',
-            url: '/' + destination + '/' + obj.value,
+            url: '/' + destination + '/' + obj.value ,
             contentType: 'application/json'
         });
 }
