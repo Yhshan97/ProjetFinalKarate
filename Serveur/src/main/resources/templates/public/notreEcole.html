@@ -22,19 +22,17 @@
 <div class="container">
     <div class="panel panel-default" th:each="role : ${listeRoles}">
         <div class="panel-heading text-center">
-            <h3 th:text="${role.getNomRole()}"></h3>
+            <h3 th:text="${role.getRole()}"></h3>
         </div>
         <div class="panel-body" th:if="${!role.getComptes().isEmpty()}" th:each="compte : ${role.getComptes()}">
             <div th:if="${!compte.isHonte()}">
                 <img th:src="${compte.getAvatar().getAvatar()}" th:height="80px"/>&nbsp;&nbsp;
-                <span style="font-size: 20px"><span th:text="${compte.getAlias()}"></span>,&nbsp;
-                <span th:text="'ceinture ' + ${compte.getGroupe().getNomGroupe()}"></span>, &nbsp;
-                    <span th:text="'utilisateur ' + ${compte.getCourriel()}"></span></span>
+                <span style="font-size: 20px"><span th:text="${compte.getFullname()}"></span>,&nbsp;
+                <span th:text="'ceinture ' + ${compte.getGroupe().getGroupe()}"></span>, &nbsp;
+                <span th:text="'utilisateur ' + ${compte.getUsername()}"></span></span>
             </div>
         </div>
-        <div class="panel-body" th:unless="${!role.getComptes().isEmpty()}">
-            <br/>
-        </div>
+
     </div>
 
 
@@ -42,12 +40,12 @@
         <div class="panel-heading text-center">
             <h3 th:text="'Section de la honte'"></h3>
         </div>
-        <div class="panel-body">
-            <div th:each="compte : ${listeComptes}" th:if="${compte.isHonte()}" >
+        <div class="panel-body" th:each="compte : ${listeComptes}" th:if="${compte.isHonte()}">
+            <div>
                     <img th:src="${compte.getAvatar().getAvatar()}" th:height="80px"/>&nbsp;&nbsp;
-                    <span style="font-size: 20px"><span th:text="${compte.getAlias()}"></span>,&nbsp;
-                    <span th:text="'ceinture ' + ${compte.getGroupe().getNomGroupe()}"></span>, &nbsp;
-                    <span th:text="'utilisateur ' + ${compte.getCourriel()}"></span></span>
+                    <span style="font-size: 20px"><span th:text="${compte.getFullname()}"></span>,&nbsp;
+                    <span th:text="'ceinture ' + ${compte.getGroupe().getGroupe()}"></span>, &nbsp;
+                    <span th:text="'utilisateur ' + ${compte.getUsername()}"></span></span>
             </div>
         </div>
     </div>

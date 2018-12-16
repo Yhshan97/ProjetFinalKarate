@@ -26,8 +26,8 @@ public class SecuriteWebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests() //.antMatchers("/grades").hasAnyAuthority("SENSEI","VENERABLE")
-                .antMatchers("/kumite","/grades").authenticated()
+        http.authorizeRequests().antMatchers("/grades").hasAnyAuthority("SENSEI","VENERABLE")
+                //.antMatchers("/kumite","/grades").authenticated()
                 .antMatchers("/**").permitAll()
                 .anyRequest()
                 .authenticated()
@@ -40,6 +40,7 @@ public class SecuriteWebConfiguration extends WebSecurityConfigurerAdapter {
                 .frameOptions()
                 .disable().and().csrf().disable();
        // http.sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry());
+
     }
 
     //Initialiser la méthode pour s’identifier

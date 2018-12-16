@@ -53,7 +53,7 @@ public class ControleurMVCRest {
 
     private Compte compteGauche, compteDroite, compteArbitre;
 
-    private String gaucheAttaque = "", droiteAttaque = "";
+    private int gaucheAttaque = -1, droiteAttaque = -1;
 
     private int nbFois = 0;
 
@@ -70,7 +70,11 @@ public class ControleurMVCRest {
         this.template = template;
     }
 
-    @Transactional
+
+    /*
+     *  List of users that are connected / list of their positions
+     */
+
     @RequestMapping(value = "/lstComptes", method = RequestMethod.GET)
     public String listeComptes() {
 
@@ -91,74 +95,6 @@ public class ControleurMVCRest {
         return "{ comptes : [" + String.join(",", listeComptesJSON) + "] }";
     }
 
-    @RequestMapping(value = "/login/{courriel}", method = RequestMethod.GET)
-    public String login(@PathVariable("courriel") String courriel, HttpSession session) {
-
-        if(!compteDao.findById(courriel).equals(Optional.empty())) {
-            String str = listeDesConnexions.put(courriel, session.getId());
-            System.out.println(str);
-            System.out.println(listeDesConnexions.toString());
-            lstPositions.put(courriel, "ailleurs");
-
-            this.template.convertAndSend("/sujet/lstLieux", lstPositions);
-
-            return session.getId();
-        }
-        return null;
-    }
-
-    @RequestMapping(value = "/logout/{sessionId}", method = RequestMethod.GET)
-    public String logout(@PathVariable("sessionId") String sessionId) {
-        System.out.println(listeDesConnexions.toString());
-        boolean logout = false;
-        if (listeDesConnexions.containsValue(sessionId)) {
-            for (String key : listeDesConnexions.keySet()) {
-                System.out.println(key);
-                if (listeDesConnexions.get(key).equals(sessionId)) {
-                    System.out.println("yes");
-                    listeDesConnexions.remove(key);
-                    lstPositions.remove(key);
-                    logout = true;
-                    break;
-                }
-            }
-        }
-
-        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
-
-        return logout ? "Logout OK" : "Déjà logged out";
-    }
-
-    @GetMapping("/")
-    HashMap<String, String> uid() {
-        System.out.println(lstPositions.toString());
-        return null;
-    }
-
-    @MessageMapping("/publicmsg")
-    @SendTo("/sujet/reponsepublique")
-    public Reponse publique(Message message) {
-        Compte sender = compteDao.getOne(message.getDe());
-
-        if (listeDesConnexions.get(message.getDe()) != null && sender != null) {
-            return sender.getRole().getId() > 1 && listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
-                    new Reponse(message.getDe(), new Date().getTime(), "public") : null;
-        } else return null;
-    }
-
-    @MessageMapping("/privatemsg")
-    @SendTo("/sujet/reponseprive")
-    public Reponse prive(Message message) {
-        //return new Reponse(message.getDe(), new Date().getTime(),"privé");
-
-        if (listeDesConnexions.get(message.getDe()) != null) {
-            return listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
-                    new Reponse(message.getDe(), new Date().getTime(), "privé") : null;
-        }
-
-        return null;
-    }
-
     @MessageMapping("/lieux")
     @SendTo("/sujet/lstLieux")
     public HashMap<String, String> lieux(LieuxMessage message) {
@@ -174,8 +110,10 @@ public class ControleurMVCRest {
         if (listeDesConnexions.get(courriel) == null)
             return null;
 
-        else if (listeDesConnexions.get(courriel).equals(session))
+        else if (listeDesConnexions.get(courriel).equals(session)) {
             lstPositions.put(courriel, position);
+            combatLoop();
+        }
 
         else  //La session est différente
             return null;
@@ -187,6 +125,260 @@ public class ControleurMVCRest {
     @SendTo("/sujet/lstComptes")
     public String listeComptesWS() {
         return listeComptes();
+    }
+
+
+    /*
+     *  Login / logout
+     */
+
+
+    @RequestMapping(value = "/login/{courriel}", method = RequestMethod.GET)
+    public String login(@PathVariable("courriel") String courriel, HttpSession session) {
+
+        if(!compteDao.findById(courriel).equals(Optional.empty())) {
+            String str = listeDesConnexions.put(courriel, session.getId());
+            lstPositions.put(courriel, "ailleurs");
+
+            this.template.convertAndSend("/sujet/lstLieux", lstPositions);
+
+            return session.getId();
+        }
+        return null;
+    }
+
+    @RequestMapping(value = "/logout/{sessionId}", method = RequestMethod.GET)
+    public String logout(@PathVariable("sessionId") String sessionId) {
+        System.out.println(listeDesConnexions.toString());
+        boolean logout = false;
+        if (listeDesConnexions.containsValue(sessionId)) {
+            for (String key : listeDesConnexions.keySet()) {
+                if (listeDesConnexions.get(key).equals(sessionId)) {
+                    listeDesConnexions.remove(key);
+                    lstPositions.remove(key);
+                    logout = true;
+                    break;
+                }
+            }
+        }
+
+        this.template.convertAndSend("/sujet/lstLieux", lstPositions);
+
+        return logout ? "Logout OK" : "Déjà logged out";
+    }
+
+
+    /*
+     *  Messages
+     */
+
+
+    @MessageMapping("/publicmsg")
+    @SendTo("/sujet/reponsepublique")
+    public Reponse publique(Message message) {
+        Compte sender = compteDao.getOne(message.getDe());
+
+        if (listeDesConnexions.get(message.getDe()) != null && sender != null) {
+            return sender.getRole().getId() > 1 && listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
+                    new Reponse(message.getDe(), new Date().getTime(), "public") : null;
+        } else return null;
+    }
+
+    @MessageMapping("/privatemsg")
+    @SendTo("/sujet/reponseprive")
+    public Reponse prive(Message message) {
+        if (listeDesConnexions.get(message.getDe()) != null) {
+            return listeDesConnexions.get(message.getDe()).equals(message.getSession()) ?
+                    new Reponse(message.getDe(), new Date().getTime(), "privé") : null;
+        }
+        return null;
+    }
+
+
+    /*
+     *  Combat
+     */
+
+    private void combatLoop(){
+        th = new Thread(() -> {
+            while(!currentThread().isInterrupted()){
+                try {
+                    System.out.println("Inside loop 1");
+                    //Send infos combat (who vs who / )
+                    List<Compte> listCombattants = new ArrayList<>();
+                    List<Compte> listArbitres = new ArrayList<>();
+
+                    //Put comptes into their proper list
+                    for (String compte : lstPositions.keySet()){
+                        if(Objects.equals(lstPositions.get(compte), "attente")) // to verify
+                            listCombattants.add(compteDao.findById(compte).get());
+
+                        else if(Objects.equals(lstPositions.get(compte), "arbitre")) //to verify
+                            listArbitres.add(compteDao.findById(compte).get());
+                    }
+
+                    if(listCombattants.size() < 2 || listArbitres.size() < 1)
+                        currentThread().interrupt();
+
+                    System.out.println("Inside loop 2");
+                    sleep(5000);
+                    returnInfoCombat(listCombattants,listArbitres); // choose fighters
+                    System.out.println("Inside loop 3");
+                    sleep(2000);
+                    // randomise attack left and right and send
+                    randomiseAttacks();
+                    System.out.println("Inside loop 4");
+                    sleep(2000);
+                    // send winner (check if venerable then he auto wins..)
+                    //save fight and reset variables
+                    returnResultatCombat();
+
+                    resetCombatState();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        if(listeDesConnexions.size() >= 3 && !th.isAlive() && th.isInterrupted())
+            th.start();
+    }
+
+    private void randomiseAttacks(){
+        if(compteGauche == null || compteDroite == null || compteArbitre == null)
+            return;
+
+        Random rand = new Random();
+        //1 = rock, 2= paper, 3= scissors
+        gaucheAttaque = rand.nextInt(3);
+        droiteAttaque = rand.nextInt(3);
+
+        String strJSONResultat =
+                "{ \"attaqueGauche\" : \"" + gaucheAttaque + "\"," +
+                        " \"attaqueDroite\" : \"" + droiteAttaque + "\" " + //," +
+                       // " \"resultatCombat\" : \"" + resultat + "\"," +
+                        //" \"nomGauche\" : \"" + compteGauche.getUsername() + "\"," +
+                        //" \"nomDroite\" : \"" + compteDroite.getUsername() + "\"," +
+                        //" \"nomArbitre\" : \"" + compteArbitre.getUsername() + "\"" +
+                        "}";
+        System.out.println(strJSONResultat);
+        this.template.convertAndSend("/sujet/ChoixCombat",strJSONResultat);
+
+    }
+
+
+    private void returnInfoCombat(List<Compte> listCombattants, List<Compte> listArbitres) {
+
+
+        if (listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat) {
+            Random rand = new Random();
+
+            int random = rand.nextInt(listCombattants.size());
+            int random2 = rand.nextInt(listCombattants.size());
+            int randomArbitre = rand.nextInt(listArbitres.size());
+            while (random == random2)
+                random2 = rand.nextInt(listCombattants.size());
+
+            compteGauche = listCombattants.get(random);
+            String nomGauche = compteGauche.getUsername();
+            String avatarGauche = compteGauche.getAvatar().getAvatar();
+
+            compteDroite = listCombattants.get(random2);
+            String nomDroite = compteDroite.getUsername();
+            String avatarDroite = compteDroite.getAvatar().getAvatar();
+
+            compteArbitre = listArbitres.get(randomArbitre);
+            String nomArbitre = compteArbitre.getUsername();
+            String avatarArbitre = compteArbitre.getAvatar().getAvatar();
+
+            enCombat = true;
+            String strJSON = "{ \"gaucheNom\" : \"" + nomGauche + "\", \"gaucheAvatar\" : \"" + avatarGauche + "\", \"droiteNom\" : \"" + nomDroite + "\"," +
+                    " \"droiteAvatar\" : \"" + avatarDroite + "\", \"arbitreNom\" : \"" + nomArbitre + "\", \"arbitreAvatar\" : \"" + avatarArbitre + "\"}";
+
+            this.template.convertAndSend("/sujet/infoCombat", strJSON);
+        }
+    }
+
+    private void returnResultatCombat(){
+        if(compteGauche == null || compteDroite == null || compteArbitre == null)
+            return;
+        if(gaucheAttaque == -1 || droiteAttaque == -1)
+            return;
+
+        String result = "";
+        int ptsGaucheGain = 0;
+        int ptsDroiteGain = 0;
+        int ptsArbitre = 1;
+
+        //0 = rock, 1= paper, 2= scissors
+        if ((gaucheAttaque + 1) % 3 == droiteAttaque)
+            result =  "droite";
+        else if ((droiteAttaque + 1) % 3 == gaucheAttaque)
+            result = "gauche";
+        else if(droiteAttaque == gaucheAttaque)
+            result = "draw";
+
+        //Venerable check
+        if(compteGauche.getRole().getId() == 4)
+            result = "gauche";
+        else if(compteDroite.getRole().getId() == 4)
+            result = "droite";
+
+        if(result.equals("gauche"))
+            ptsGaucheGain = 10;
+        else if(result.equals("droite"))
+            ptsDroiteGain = 10;
+        else{
+            ptsGaucheGain = 5;
+            ptsDroiteGain = 5;
+        }
+
+        this.template.convertAndSend("/sujet/resultCombat", "{ result : \""+ result + "\" }");
+
+        Long milli = new Date().getTime();
+        //blanc = gauche
+        //rouge = droite
+        Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
+                compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
+        combatDao.saveAndFlush(combat);
+    }
+
+    private void resetCombatState(){
+        enCombat = false;
+
+        compteArbitre = null;
+        compteGauche = null;
+        compteDroite = null;
+
+        gaucheAttaque = -1;
+        droiteAttaque = -1;
+
+        String strJSON =
+                "{\"gaucheNom\" : \""    + null + "\"," +
+                " \"gaucheAvatar\" : \""  + null + "\"," +
+                " \"droiteNom\" : \""     + null + "\"," +
+                " \"droiteAvatar\" : \""  + null + "\"," +
+                " \"arbitreNom\" : \""    + null + "\"," +
+                " \"arbitreAvatar\" : \"" + null + "\"}";
+
+        this.template.convertAndSend("/sujet/infoCombat",strJSON);
+    }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////// to be deleted section
+
+
+    /*
+     * Prototype ONLY functions
+     */
+
+    //@GetMapping("/")
+    HashMap<String, String> uid() {
+        System.out.println(lstPositions.toString());
+        randomiseAttacks();
+        returnResultatCombat();
+        return null;
     }
 
     @RequestMapping(value = "/combat1/{courriel}/{session}", method = RequestMethod.GET)
@@ -338,201 +530,18 @@ public class ControleurMVCRest {
             return "refusé";
     }
 
+
     /*
-    @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
-    public String getAvatarUser(@PathVariable("id") String id){ return compteDao.getOne(id).getAvatar().getAvatar(); }
-
-    @RequestMapping(value = "/passer/{id}", method = RequestMethod.GET)
-    public void passerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
-
-        Compte compte = compteDao.getOne(id);
-        compteDao.passer(compte.getCredits() - 10,0,groupeDao.getOne(compte.getGroupe().getId() + 1),id);
-        compteDao.couler(compte.getCredits() - 10,false,id);
-        examenDao.save(new Examen(compte.getCourriel(),compteLogged.getUsername(),"Reussite"));
-    }
-
-    @RequestMapping(value = "/couler/{id}", method = RequestMethod.GET)
-    public void coulerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
-
-        Compte compte = compteDao.getOne(id);
-        compteDao.couler(compte.getCredits() - 5,true,id);
-        examenDao.save(new Examen(compte.getCourriel(),compteLogged.getUsername(),"Echec"));
-    }
-
-    @RequestMapping(value = "/transferrer/{id}", method = RequestMethod.GET)
-    public void transferrerUtil(@PathVariable("id") String id){
-
-        Compte compte = compteDao.getOne(id);
-
-        if(compte.getRole().getNomRole().equals("NOUVEAU"))
-            compteDao.setCompteCreditsById(compte.getCredits()-10, id);
-
-        compteDao.transferrer(roleDao.getOne(compte.getRole().getIdRole()- 1) ,id);
-    }
-
-    @RequestMapping(value = "/enleverSensei/{id}", method = RequestMethod.GET)
-    public void enleverSensei(@PathVariable("id") String id){
-
-        Compte compte = compteDao.getOne(id);
-
-        compteDao.transferrer(roleDao.getOne(compte.getRole().getIdRole() + 1),id);
-    }
-*/
-
-    @MessageMapping("/connectedToKumite")
-    @SendTo("/sujet/connect")
-    private void connected(){
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Compte.class, new CompteSerializer());
-        mapper.registerModule(module);
-
-        if(listeDesConnexions.size() == 3)
-        th = new Thread(() -> {
-            while(!currentThread().isInterrupted()){
-                try {
-                    //listeConnected.clear();
-                    //this.template.convertAndSend("/sujet/keepConnected","");
-
-                    sleep(5000);
-
-                    /*
-                    try {
-                        for (int x = 0; x < listeConnected.size(); x++)
-                        for (int y = 0; y < listeConnected.size(); y++)
-                        if (x != y)
-                            if (listeConnected.get(x).getUsername().equals(listeConnected.get(y).getUsername())) {
-                                listeConnected.get(x).setPosition("spectateur");
-                                listeConnected.remove(y);
-                                System.out.println("Le compte '" + listeConnected.get(x).getUsername() + "' est connecté deux fois !");
-                            }
-                    }catch(Exception e){System.out.println(e.getMessage());}
-                    */
-                    //Transform compte to objectJson
-                    //List<String> listeComptesJSON = new ArrayList<>();
-                    //for (Compte user: listeConnected)
-                    //    listeComptesJSON.add(mapper.writeValueAsString(user));
-
-                    if(listeDesConnexions.size() < 3)
-                        currentThread().interrupt();
-
-                    //this.template.convertAndSend("/sujet/receiveList",listeComptesJSON);
-                    //Send infos combat (who vs who / )
-
-                    returnInfoCombat();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
+     * END - Prototype ONLY functions
+     */
 
 
-    private void returnInfoCombat() {
-        List<Compte> listCombattants = new ArrayList<>();
-        List<Compte> listArbitres = new ArrayList<>();
 
-        //Put comptes into their proper list
-        for (String compte : lstPositions.keySet()){
-            if(Objects.equals(lstPositions.get(compte), "attente")) // to verify
-                listCombattants.add(compteDao.findById(compte).get());
-
-            else if(Objects.equals(lstPositions.get(compte), "arbitre")) //to verify
-                listArbitres.add(compteDao.findById(compte).get());
-        }
-
-        if (listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat) {
-            Random rand = new Random();
-
-            int random = rand.nextInt(listCombattants.size());
-            int random2 = rand.nextInt(listCombattants.size());
-            int randomArbitre = rand.nextInt(listArbitres.size());
-            while (random == random2)
-                random2 = rand.nextInt(listCombattants.size());
-
-            compteGauche = listCombattants.get(random);
-            String nomGauche = compteGauche.getUsername();
-            String avatarGauche = compteGauche.getAvatar().getAvatar();
-
-            compteDroite = listCombattants.get(random2);
-            String nomDroite = compteDroite.getUsername();
-            String avatarDroite = compteDroite.getAvatar().getAvatar();
-
-            compteArbitre = listArbitres.get(randomArbitre);
-            String nomArbitre = compteArbitre.getUsername();
-            String avatarArbitre = compteArbitre.getAvatar().getAvatar();
-
-            enCombat = true;
-            String strJSON = "{ \"gaucheNom\" : \"" + nomGauche + "\", \"gaucheAvatar\" : \"" + avatarGauche + "\", \"droiteNom\" : \"" + nomDroite + "\"," +
-                    " \"droiteAvatar\" : \"" + avatarDroite + "\", \"arbitreNom\" : \"" + nomArbitre + "\", \"arbitreAvatar\" : \"" + avatarArbitre + "\"}";
-
-            this.template.convertAndSend("/sujet/infoCombat", strJSON);
-        }
-    }
+    /*
+     * Older functions
+     */
 
 /*
-    @MessageMapping("/receiveAttaque")
-    public void recoitAttaques(@Header String nomUtil, String attaque){
-
-        Thread th2 = new Thread(() -> {
-            try {
-                sleep(2000);
-                if(nbFois == 1) {
-                    faireCombat(true);
-                    nbFois = 0;
-                }
-                if(nbFois == 0){
-
-                }
-            } catch (InterruptedException e) {
-
-                Thread.currentThread().interrupt();
-                e.printStackTrace();
-            }
-        });
-
-        if(nomUtil.equals(compteDroite.getUsername())){
-            droiteAttaque = attaque;
-            nbFois++;
-        }
-        else if(nomUtil.equals(compteGauche.getUsername())){
-            gaucheAttaque = attaque;
-            nbFois++;
-        }
-
-        if(nbFois == 2){
-            th2.interrupt();
-            faireCombat(false);
-            nbFois = 0;
-        }else if(nbFois == 1){
-            th2.start();
-        }
-    }
-
-    private void resetCombatState(){
-
-        enCombat = false;
-
-        compteArbitre = null;
-        compteGauche = null;
-        compteDroite = null;
-
-        gaucheAttaque ="";
-        droiteAttaque ="";
-
-        String strJSON =
-                "{\"gaucheNom\" : \""    + null + "\"," +
-                " \"gaucheAvatar\" : \""  + null + "\"," +
-                " \"droiteNom\" : \""     + null + "\"," +
-                " \"droiteAvatar\" : \""  + null + "\"," +
-                " \"arbitreNom\" : \""    + null + "\"," +
-                " \"arbitreAvatar\" : \"" + null + "\"}";
-
-        this.template.convertAndSend("/sujet/infoCombat",strJSON);
-    }
-
     private int gagne(String cote){
 
         int idGroupeGauche = compteGauche.getGroupe().getId();
@@ -729,5 +738,86 @@ public class ControleurMVCRest {
 
 */
 
+/*
+    @MessageMapping("/receiveAttaque")
+    public void recoitAttaques(@Header String nomUtil, String attaque){
+
+        Thread th2 = new Thread(() -> {
+            try {
+                sleep(2000);
+                if(nbFois == 1) {
+                    faireCombat(true);
+                    nbFois = 0;
+                }
+                if(nbFois == 0){
+
+                }
+            } catch (InterruptedException e) {
+
+                Thread.currentThread().interrupt();
+                e.printStackTrace();
+            }
+        });
+
+        if(nomUtil.equals(compteDroite.getUsername())){
+            droiteAttaque = attaque;
+            nbFois++;
+        }
+        else if(nomUtil.equals(compteGauche.getUsername())){
+            gaucheAttaque = attaque;
+            nbFois++;
+        }
+
+        if(nbFois == 2){
+            th2.interrupt();
+            faireCombat(false);
+            nbFois = 0;
+        }else if(nbFois == 1){
+            th2.start();
+        }
+    }
+*/
+
+
+    /*
+    @RequestMapping(value = "/userAvatar/{id}", method = RequestMethod.GET)
+    public String getAvatarUser(@PathVariable("id") String id){ return compteDao.getOne(id).getAvatar().getAvatar(); }
+
+    @RequestMapping(value = "/passer/{id}", method = RequestMethod.GET)
+    public void passerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
+
+        Compte compte = compteDao.getOne(id);
+        compteDao.passer(compte.getCredits() - 10,0,groupeDao.getOne(compte.getGroupe().getId() + 1),id);
+        compteDao.couler(compte.getCredits() - 10,false,id);
+        examenDao.save(new Examen(compte.getCourriel(),compteLogged.getUsername(),"Reussite"));
+    }
+
+    @RequestMapping(value = "/couler/{id}", method = RequestMethod.GET)
+    public void coulerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
+
+        Compte compte = compteDao.getOne(id);
+        compteDao.couler(compte.getCredits() - 5,true,id);
+        examenDao.save(new Examen(compte.getCourriel(),compteLogged.getUsername(),"Echec"));
+    }
+
+    @RequestMapping(value = "/transferrer/{id}", method = RequestMethod.GET)
+    public void transferrerUtil(@PathVariable("id") String id){
+
+        Compte compte = compteDao.getOne(id);
+
+        if(compte.getRole().getNomRole().equals("NOUVEAU"))
+            compteDao.setCompteCreditsById(compte.getCredits()-10, id);
+
+        compteDao.transferrer(roleDao.getOne(compte.getRole().getIdRole()- 1) ,id);
+    }
+
+    @RequestMapping(value = "/enleverSensei/{id}", method = RequestMethod.GET)
+    public void enleverSensei(@PathVariable("id") String id){
+
+        Compte compte = compteDao.getOne(id);
+
+        compteDao.transferrer(roleDao.getOne(compte.getRole().getIdRole() + 1),id);
+    }
+*/
 
 }

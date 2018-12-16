@@ -27,12 +27,15 @@
 <body>
 
 <div class="container text-center" style="margin-bottom: 100px;">
+    <div class="panel-heading text-center">
+
+        <h3>Combats</h3>
+        <br/>
+    </div>
     <br/>
-    <div class="panel panel-default center-block" style="min-width: 650px;max-width: 800px">
-        <div class="panel-heading">
-            <a href="/" class="btn btn-primary pull-left" style="margin-top: 12px">Retour</a>
-            <h3>Kumite</h3></div>
-        <div class="panel-body " >
+    <div class="panel center-block" style="min-width: 650px;max-width: 800px">
+
+            <!--
             <div class="pull-left text-left" style="margin-right: 35px;">
                 <input id="nomUtil" type="hidden" th:value="${nomUtil}" >
 
@@ -43,6 +46,8 @@
                 <h4>Points : <b><span id="spPoints" th:text="${points}"></span><span id="plusPts" class="addedScore"> </span></b></h4>
                 <h4>Crédits : <b><span id="spCredits" th:text="${credits}"></span><span id="plusCred" class="addedScore"> </span></b></h4>
             </div>
+            -->
+            <!--
             <div>
                 <span style='width: 100%;'>
                     <b style="font-size: 18px">Je veux être un ...</b>
@@ -72,8 +77,8 @@
             <div id="grpArbitre" class="btn-group btn-group-lg hidden"  role="group" style="margin: 10px" >
             </div>
         </div>
-    </div>
-    <div class="center-block" style="min-width: 650px;max-width: 800px">
+        -->
+    <div class="center-block panel-body" style="min-width: 650px;max-width: 800px">
         <div class="pull-left" style="width: 30%;height:100%;margin:1.5%">
             <div class="panel panel-default">
                 <div class="panel-heading"><h3>Spectateurs</h3></div>
@@ -99,7 +104,7 @@
             </div>
         </div>
         <div class="panel panel-default">
-            <div class="panel-heading"> <h3> La surface de combat </h3></div>
+            <div > <h3> La surface de combat </h3></div>
             <div class="panel-body" style="height: 100px;">
                 <img id="avatarGauche" src="images/noprofile.jpeg" class="pull-left" style="height: 75px;">
                 <img id="gaucheAttaque" src="images/noprofile.jpeg" class="hidden pull-left flipped" style="height: 75px;">
@@ -110,9 +115,10 @@
                 <img id="droiteAttaque" src="images/noprofile.jpeg" class="hidden pull-right" style="height: 75px;">
             </div>
         </div>
-        <h3 id="headerArbitre"></h3>
     </div>
 
+        <a href="/" class="btn btn-primary pull-left btn-block" style="margin-top: 12px">Retour</a>
+    </div>
 
 </div>
 
