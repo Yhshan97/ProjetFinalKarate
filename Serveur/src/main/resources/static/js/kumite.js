@@ -30,66 +30,46 @@ $(function () {
         });
 
         stompClient.subscribe("/sujet/infoCombat", function (message) {
-
             var messageJSON = JSON.parse(message.body);
-            var nomUtilis = $("#nomUtil").val();
-            var spanInfo = $("#spanInfo");
 
             $("#avatarGauche").attr("src" ,messageJSON.gaucheAvatar === "null" ? "images/noprofile.jpeg" : messageJSON.gaucheAvatar);
             $("#avatarArbitre").attr("src",messageJSON.arbitreAvatar=== "null" ? "images/noprofile.jpeg" : messageJSON.arbitreAvatar);
             $("#avatarDroite").attr("src" ,messageJSON.droiteAvatar === "null" ? "images/noprofile.jpeg" : messageJSON.droiteAvatar);
 
-            if(messageJSON.gaucheAvatar !== "null"){
-                /*
-                if(messageJSON.gaucheNom === nomUtilis){
-                    spanInfo.text("Vous êtes à gauche..").fadeIn();
-                    $('div label').addClass('disabled');
-                }
-                else if(messageJSON.droiteNom === nomUtilis){
-                    spanInfo.text("Vous êtes à droite..").fadeIn();
-                    $('div label').addClass('disabled');
-                }
-                else if(messageJSON.arbitreNom === nomUtilis) {
-                    spanInfo.text("Vous êtes l'arbitre..").fadeIn();
-                    $('div label').addClass('disabled');
-                }
-                */
+            $("#droiteAttaque, #gaucheAttaque").addClass("hidden");
+            $("#droiteGagne,#gaucheGagne").addClass("hidden");
+        });
 
-                if(counter === 10){
-                interval = setInterval(function() {
-                    $("#spanCount").text("Le combat commence dans " + counter + " secondes...").fadeIn();
 
-                    if(counter === 5)
-                        $("#headerArbitre").text("礼(Rei) !");
+        stompClient.subscribe("/sujet/ChoixCombat", function(message){
 
-                    if (counter <= 0) {
-                        $("#spanCount").text("");
-                        $("#headerArbitre").text("はじめ(Hajime) !");
+            var jsonObj = JSON.parse(message.body);
 
-                        if(messageJSON.gaucheNom === nomUtilis){
-                            $("#grpAttaque").delay(300).removeClass("hidden").fadeIn();
-                            setTimeout(function(){
-                                $("#grpAttaque").addClass("hidden").fadeOut();
-                                stompClient.send("/app/receiveAttaque",{nomUtil : nomUtilis},getAttaque());
-                            },5000);
-                        }
-                        else if(messageJSON.droiteNom === nomUtilis){
-                            $("#grpAttaque").delay(300).removeClass("hidden").fadeIn();
-                            setTimeout(function(){
-                                $("#grpAttaque").addClass("hidden").fadeOut();
-                                stompClient.send("/app/receiveAttaque",{nomUtil : nomUtilis},getAttaque());
-                            },5000);
-                        }
-                        else if(messageJSON.arbitreNom === nomUtilis)
-                            $("#grpArbitre").delay(300).removeClass("hidden").fadeIn();
+            $("#droiteAttaque").attr("src","/images/" + jsonObj.attaqueDroite + ".jpg");
+            $("#gaucheAttaque").attr("src","/images/" + jsonObj.attaqueGauche + ".jpg");
 
-                        clearInterval(interval);
-                        interval = null;
-                    }
-                    counter--;
-                }, 1000);
-                }
+            if(jsonObj.attaqueGauche === "aucun")
+                gaucheAttaque.removeClass("flipped");
+            else if(!gaucheAttaque.hasClass('flipped'))
+                gaucheAttaque.addClass("flipped");
+
+            //$("#gaucheGagne").removeClass("hidden");
+
+        })
+
+        stompClient.subscribe("/sujet/resultCombat", function(message){
+            var winner = JSON.parse(message.body).resultat;
+
+            if(winner === "gauche"){
+                $("#gaucheGagne").removeClass("hidden");
             }
+            else if(winner === "droite"){
+                $("#droiteGagne").removeClass("hidden");
+            }
+            else {
+                $("#droiteGagne,#gaucheGagne").removeClass("hidden");
+            }
+
         });
 
         /*
@@ -173,29 +153,3 @@ $(function () {
         });*/
     });
 });
-
-
-function getPosition() {
-    if ($("#lblSpectateur").hasClass("active")) {
-        return "spectateur";
-    }
-    else if ($("#lblCombattant").hasClass("active")) {
-        return "combattant";
-    }
-    else {
-        return "arbitre";
-    }
-}
-
-function getAttaque(){
-    if ($("#lblRoche").hasClass("active"))
-        return "roche";
-
-    else if ($("#lblPapier").hasClass("active"))
-        return "papier";
-
-    else if($("#lblCiseaux").hasClass("active"))
-        return "ciseaux";
-
-    return "aucun";
-}

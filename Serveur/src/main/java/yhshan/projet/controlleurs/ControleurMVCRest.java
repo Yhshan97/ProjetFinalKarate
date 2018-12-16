@@ -358,7 +358,6 @@ public class ControleurMVCRest {
         Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
                 compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
         combatDao.saveAndFlush(combat);
-        this.template.convertAndSend("/sujet/resultCombat", "{ \"result\" : \""+ result + "\" }");
         listeComptesWeb();
         listeComptes();
     }
