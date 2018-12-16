@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             tools:context=".Fragments.WaitingRoomFragment"
+                                             android:id="@+id/frameLayout3">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <RadioGroup
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/rgPlace" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="32dp" android:layout_marginStart="8dp">
+        <RadioButton
+                android:text="@string/elsewhere"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/rbElsewhere" android:layout_weight="1"
+                android:checked="true"/>
+        <RadioButton
+                android:text="@string/spectator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/rbSpectator" android:layout_weight="1"/>
+        <RadioButton
+                android:text="@string/waiting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/rbWaiting" android:layout_weight="1"/>
+    </RadioGroup>
+    <TextView
+            android:text="@string/arbitrator_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView2" app:layout_constraintStart_toEndOf="@+id/rgPlace"
+            android:layout_marginStart="8dp" app:layout_constraintTop_toTopOf="@+id/rgPlace"/>
+    <CheckBox
+            android:text="@string/arbitrator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/cbArbitrator" app:layout_constraintStart_toEndOf="@+id/textView2"
+            android:layout_marginStart="8dp"
+            app:layout_constraintTop_toTopOf="@+id/textView2"/>
+    <android.support.v7.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="120dp" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/cbArbitrator" app:layout_constraintStart_toEndOf="@+id/rgPlace"
+            android:layout_marginStart="8dp" android:id="@+id/rvArbitrators" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"/>
+    <TextView
+            android:text="@string/elsewhere_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView3" app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/rvArbitrators"/>
+    <android.support.v7.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/textView3"
+            android:id="@+id/rvElsewhere"/>
+    <TextView
+            android:text="@string/spectator_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView4" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rvElsewhere" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
+    <android.support.v7.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="120dp" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/textView4" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+            android:id="@+id/rvSpectators"/>
+    <TextView
+            android:text="@string/waiting_list"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView5" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rvSpectators" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
+    <android.support.v7.widget.RecyclerView
+            android:layout_width="0dp"
+            android:layout_height="120dp" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/textView5" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+            android:id="@+id/rvWaiting"/>
+    <Button
+            android:text="@string/fight_red"
+            android:layout_width="wrap_content"
+            android:layout_height="55dp"
+            android:id="@+id/btnFightRed" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rvWaiting" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
+    <Button
+            android:text="@string/fight_white"
+            android:layout_width="wrap_content"
+            android:layout_height="55dp"
+            android:id="@+id/btnFightWhite" app:layout_constraintStart_toEndOf="@+id/btnFightRed"
+            android:layout_marginStart="8dp" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rvWaiting"/>
+    <Button
+            android:text="@string/fight_tie"
+            android:layout_width="wrap_content"
+            android:layout_height="55dp"
+            android:id="@+id/btnFightTie" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rvWaiting" app:layout_constraintStart_toEndOf="@+id/btnFightWhite"
+            android:layout_marginStart="8dp"/>
+    <Button
+            android:text="@string/arbiter_red"
+            android:layout_width="wrap_content"
+            android:layout_height="55dp"
+            android:id="@+id/btnArbiterRed" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/rvWaiting" app:layout_constraintStart_toEndOf="@+id/btnFightTie"
+            android:layout_marginStart="8dp"/>
+    <Button
+            android:text="@string/arbiter_red_fault"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:id="@+id/btnArbiterRedFault"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp" app:layout_constraintTop_toBottomOf="@+id/btnArbiterRed"
+            app:layout_constraintStart_toEndOf="@+id/btnChangeRole" android:layout_marginStart="8dp"/>
+    <Button
+            android:text="@string/exam_pass"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnPassExam" android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/btnFightRed" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
+    <Button
+            android:text="@string/exam_fail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnFailExam" android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/btnFightWhite"
+            app:layout_constraintStart_toEndOf="@+id/btnPassExam"
+            android:layout_marginStart="8dp"/>
+    <Button
+            android:text="@string/change_role"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/btnChangeRole" android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/btnFightTie" app:layout_constraintStart_toEndOf="@+id/btnFailExam"
+            android:layout_marginStart="8dp"/>
+</android.support.constraint.ConstraintLayout>
