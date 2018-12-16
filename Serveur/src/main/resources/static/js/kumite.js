@@ -3,32 +3,6 @@ var interval;
 
 var counter = 10;
 $(function () {
-    $('div label').click(function () {
-        if($(this).hasClass('disabled') === false){
-            $(this).addClass('active').siblings().removeClass('active');
-        stompClient.send("/app/receive", {position: getPosition()}, $("#nomUtil").val());
-
-        $(this).addClass('disabled').siblings().addClass('disabled');
-
-        $("#spanInfo").delay(500).fadeIn();
-        document.getElementById("spanInfo").innerHTML = ("Veuillez patienter ...");
-
-        setTimeout(function() {
-             if(!interval) {
-                 $("#lblSpectateur, #lblCombattant, #lblArbitre").removeClass('disabled');
-                 //$("#lblCombattant").removeClass('disabled');
-                 //$("#lblArbitre").removeClass('disabled');
-                 if (document.getElementById("spanInfo").innerHTML === ("Veuillez patienter ..."))
-                     $("#spanInfo").fadeOut();
-             }
-        }, 5000);
-        }
-    });
-
-    $('#lblRoche, #lblPapier, #lblCiseaux').on("click",function () {
-        $(this).addClass('active').siblings().removeClass('active');
-    });
-
     var socket = new SockJS('/webSocket');
     stompClient = Stomp.over(socket);
 

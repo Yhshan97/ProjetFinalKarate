@@ -239,7 +239,6 @@ public class ControleurMVCRest {
                     //save fight and reset variables
                     returnResultatCombat();
                     resetCombatState();
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -259,8 +258,8 @@ public class ControleurMVCRest {
         droiteAttaque = rand.nextInt(3);
 
         String strJSONResultat =
-                "{ \"attaqueGauche\" : \"" + gaucheAttaque + "\"," +
-                        " \"attaqueDroite\" : \"" + droiteAttaque + "\" " + "}";
+                "{ \"attaqueGauche\" : " + gaucheAttaque + "," +
+                        " \"attaqueDroite\" : " + droiteAttaque + "}";
                         //," +
                         //" \"resultatCombat\" : \"" + resultat + "\"," +
                         //" \"nomGauche\" : \"" + compteGauche.getUsername() + "\"," +
