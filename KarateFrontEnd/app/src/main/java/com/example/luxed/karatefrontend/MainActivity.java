@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     private AccountAdapter adapterWaiting;
 
     private HttpConnection httpConnection;
-    private StompConnection stompConnection;
+    private StompConnectionJava stompConnection;
 
     private void updateSpinFighters() {
         List<String> accEmails = new ArrayList<>();
@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
         httpConnection = new HttpConnection();
 
-        stompConnection = new StompConnection("ws://10.0.2.2:8080/webSocket/websocket");
+        stompConnection = new StompConnectionJava("ws://10.0.2.2:8080/webSocket/websocket");
         // Place
         stompConnection.subChangePlace(stompMessage -> {
             //Log.i("ChangePlace", stompMessage.getPayload());
