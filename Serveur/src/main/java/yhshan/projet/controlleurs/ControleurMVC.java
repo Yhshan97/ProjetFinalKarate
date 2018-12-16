@@ -20,7 +20,7 @@ import java.util.Objects;
 
 @Controller
 public class ControleurMVC {
-/*
+
     private final CompteDao compteDao;
 
     private final AvatarDao avatarDao;
@@ -43,20 +43,6 @@ public class ControleurMVC {
 
     @RequestMapping(value = "/")
     public String racine(Model model) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean userAuth = authentication.getPrincipal() instanceof MonUserPrincipal;
-        MonUserPrincipal user = null;
-
-        if(userAuth){
-            user = (MonUserPrincipal) authentication.getPrincipal();
-        }
-
-        model.addAttribute("de",userAuth ? user.getUsername() : "Aucun");
-        model.addAttribute("alias",userAuth ? user.getAlias() : "Visiteur");
-        model.addAttribute("avatar",userAuth ? user.getAvatar() : avatarDao.getOne("Inconnu").getAvatar());
-        model.addAttribute("role",userAuth ? user.getRole() : "aucun rôle");
-        model.addAttribute("groupe",userAuth ? user.getGroupe() : "aucun");
-
         return "public/index";
     }
 
@@ -67,29 +53,11 @@ public class ControleurMVC {
         return "public/notreEcole";
     }
 
-    @RequestMapping(value = "/kumite", method = RequestMethod.GET)
+    @RequestMapping(value = "/combats", method = RequestMethod.GET)
     public String kumite(Model model) {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean userAuth = authentication.getPrincipal() instanceof MonUserPrincipal;
-        Compte connected = null;
-
-        if(userAuth){
-            MonUserPrincipal user = (MonUserPrincipal) authentication.getPrincipal();
-            connected = compteDao.getOne(user.getUsername());
-        }
-
-        model.addAttribute("nomUtil",userAuth ? connected.getUsername() : "Aucun");
-        model.addAttribute("alias",userAuth ? connected.getAlias() : "Visiteur");
-        model.addAttribute("avatar",userAuth ? connected.getAvatar().getAvatar() : avatarDao.getOne("Inconnu").getAvatar());
-        model.addAttribute("role",userAuth ? connected.getRole().getNomRole() : "aucun rôle");
-        model.addAttribute("groupe",userAuth ? connected.getGroupe().getNomGroupe() : "aucun");
-        model.addAttribute("points",userAuth ? connected.getPoints() : 0);
-        model.addAttribute("credits",userAuth ? connected.getCredits() : 0);
-
         return "prive/kumite";
     }
-
+/*
     @RequestMapping(value = "/grades", method = RequestMethod.GET)
     public String grades(Model model) {
 

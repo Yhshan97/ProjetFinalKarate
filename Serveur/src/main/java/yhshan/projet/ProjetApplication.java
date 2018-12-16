@@ -9,6 +9,8 @@ import yhshan.projet.dao.*;
 import yhshan.projet.entites.Combat;
 import yhshan.projet.entites.Compte;
 
+import java.util.List;
+
 @SpringBootApplication
 public class ProjetApplication implements CommandLineRunner {
 
@@ -36,53 +38,23 @@ public class ProjetApplication implements CommandLineRunner {
 */
     @Override
     public void run(String... args)throws Exception{
-/*
-        Compte compte1 = new Compte("a",passwordEncoder.encode("a"),"abc",
-                avatarDao.getOne("Suricate"),roledao.getOne(3),groupedao.getOne(1));
 
+        /*Compte compte1 = new Compte("a", "a_a", passwordEncoder.encode("a"), 0, 0,0,
+        new Long(000), avatarDao.getOne(23), roledao.getOne(1),groupedao.getOne(1), null, null,
+                null, null, null);
+/*
         Compte compte2 = new Compte("b",passwordEncoder.encode("b"),"Compte B",
-                avatarDao.getOne("Sorcière"),roledao.getOne(3),groupedao.getOne(1));
+                avatarDao.getOne(4),roledao.getOne(3),groupedao.getOne(1));
 
         Compte compte3 = new Compte("venerable",passwordEncoder.encode("wow"),"Maitre",
-                avatarDao.getOne("James Bond 2"),roledao.getOne(0),groupedao.getOne(7));
+                avatarDao.getOne(2),roledao.getOne(0),groupedao.getOne(7));
 
         Compte compte4 = new Compte("c",passwordEncoder.encode("c"),"compte C",
-                avatarDao.getOne("James Bond"),roledao.getOne(3),groupedao.getOne(1));
-
-        Compte compte5 = new Compte("d",passwordEncoder.encode("d"),"compte D",
-                avatarDao.getOne("Empereur"),roledao.getOne(3),groupedao.getOne(1));
-
-        Compte compte6 = new Compte("e",passwordEncoder.encode("e"),"compte Ancien",
-                avatarDao.getOne("Singe"),roledao.getOne(3),groupedao.getOne(1));
+                avatarDao.getOne(3),roledao.getOne(3),groupedao.getOne(1));
 
 
-        for (int x=0;x<30;x++) {
-            Combat c = new Combat("a", "b", "d", "draw");
-            combatDao.save(c);
-        }
-
-        for (int x=0;x<36;x++) {
-            Combat c = new Combat("a", "b", "c", "draw");
-            combatDao.save(c);
-        }
-
-        compte1.setPoints(10);
-        compte1.setCredits(123);
-        compte1.setGroupe(groupedao.getOne(2));
-
-        compte2.setPoints(20);
-        compte2.setRole(roledao.getOne(2));
-
-        compte3.setGroupe(groupedao.getOne(4));
-
-        compte4.setPoints(50);
-        compte4.setCredits(10);
-
-        compte5.setCredits(25);
-
-        compte6.setRole(roledao.getOne(2));
-
-        comptedao.save(compte1);
+        //comptedao.save(compte1);
+        /*
         comptedao.save(compte2);
         comptedao.save(compte3);
         comptedao.save(compte4);
@@ -92,6 +64,6 @@ public class ProjetApplication implements CommandLineRunner {
         System.out.println(comptedao.findAll());
         System.out.println(roledao.findAll());
         System.out.println(groupedao.findAll());
-        */
+*/
     }
 }

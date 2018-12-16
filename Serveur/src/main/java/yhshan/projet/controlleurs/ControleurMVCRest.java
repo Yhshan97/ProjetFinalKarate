@@ -203,30 +203,44 @@ public class ControleurMVCRest {
         th = new Thread(() -> {
             while(!currentThread().isInterrupted()){
                 try {
-                    if(listeDesConnexions.size() < 3)
+                    System.out.println("Inside loop 1");
+                    //Send infos combat (who vs who / )
+                    List<Compte> listCombattants = new ArrayList<>();
+                    List<Compte> listArbitres = new ArrayList<>();
+
+                    //Put comptes into their proper list
+                    for (String compte : lstPositions.keySet()){
+                        if(Objects.equals(lstPositions.get(compte), "attente")) // to verify
+                            listCombattants.add(compteDao.findById(compte).get());
+
+                        else if(Objects.equals(lstPositions.get(compte), "arbitre")) //to verify
+                            listArbitres.add(compteDao.findById(compte).get());
+                    }
+
+                    if(listCombattants.size() < 2 || listArbitres.size() < 1)
                         currentThread().interrupt();
 
+                    System.out.println("Inside loop 2");
                     sleep(5000);
-                    //Send infos combat (who vs who / )
-                    returnInfoCombat(); // choose fighters
-
+                    returnInfoCombat(listCombattants,listArbitres); // choose fighters
+                    System.out.println("Inside loop 3");
                     sleep(2000);
                     // randomise attack left and right and send
                     randomiseAttacks();
-
+                    System.out.println("Inside loop 4");
                     sleep(2000);
                     // send winner (check if venerable then he auto wins..)
+                    //save fight and reset variables
                     returnResultatCombat();
 
-                    //save fight and reset variables
-
                     resetCombatState();
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        if(listeDesConnexions.size() >= 3 && !th.isAlive())
+        if(listeDesConnexions.size() >= 3 && !th.isAlive() && th.isInterrupted())
             th.start();
     }
 
@@ -248,23 +262,13 @@ public class ControleurMVCRest {
                         //" \"nomArbitre\" : \"" + compteArbitre.getUsername() + "\"" +
                         "}";
         System.out.println(strJSONResultat);
-        this.template.convertAndSend("/sujet/resultatCombat",strJSONResultat);
+        this.template.convertAndSend("/sujet/ChoixCombat",strJSONResultat);
 
     }
 
 
-    private void returnInfoCombat() {
-        List<Compte> listCombattants = new ArrayList<>();
-        List<Compte> listArbitres = new ArrayList<>();
+    private void returnInfoCombat(List<Compte> listCombattants, List<Compte> listArbitres) {
 
-        //Put comptes into their proper list
-        for (String compte : lstPositions.keySet()){
-            if(Objects.equals(lstPositions.get(compte), "attente")) // to verify
-                listCombattants.add(compteDao.findById(compte).get());
-
-            else if(Objects.equals(lstPositions.get(compte), "arbitre")) //to verify
-                listArbitres.add(compteDao.findById(compte).get());
-        }
 
         if (listCombattants.size() >= 2 && listArbitres.size() >= 1 && !enCombat) {
             Random rand = new Random();
@@ -302,6 +306,9 @@ public class ControleurMVCRest {
             return;
 
         String result = "";
+        int ptsGaucheGain = 0;
+        int ptsDroiteGain = 0;
+        int ptsArbitre = 1;
 
         //0 = rock, 1= paper, 2= scissors
         if ((gaucheAttaque + 1) % 3 == droiteAttaque)
@@ -317,16 +324,26 @@ public class ControleurMVCRest {
         else if(compteDroite.getRole().getId() == 4)
             result = "droite";
 
-
+        if(result.equals("gauche"))
+            ptsGaucheGain = 10;
+        else if(result.equals("droite"))
+            ptsDroiteGain = 10;
+        else{
+            ptsGaucheGain = 5;
+            ptsDroiteGain = 5;
+        }
 
         this.template.convertAndSend("/sujet/resultCombat", "{ result : \""+ result + "\" }");
 
-        
-        //save combat here
+        Long milli = new Date().getTime();
+        //blanc = gauche
+        //rouge = droite
+        Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
+                compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
+        combatDao.saveAndFlush(combat);
     }
 
     private void resetCombatState(){
-
         enCombat = false;
 
         compteArbitre = null;
@@ -344,7 +361,6 @@ public class ControleurMVCRest {
                 " \"arbitreNom\" : \""    + null + "\"," +
                 " \"arbitreAvatar\" : \"" + null + "\"}";
 
-
         this.template.convertAndSend("/sujet/infoCombat",strJSON);
     }
 
@@ -357,7 +373,7 @@ public class ControleurMVCRest {
      * Prototype ONLY functions
      */
 
-    @GetMapping("/")
+    //@GetMapping("/")
     HashMap<String, String> uid() {
         System.out.println(lstPositions.toString());
         randomiseAttacks();

@@ -59,7 +59,9 @@ public class Compte implements UserDetails {
     public Compte() {
     }
 
-    public Compte(String username, String fullname, String password, int talent, int entrainement, int chouchou, Long anciendepuis, Avatar avatar, Role role, Groupe groupe, Set<Combat> rouges, Set<Combat> blancs, Set<Combat> arbitres, Set<Examen> evaluateurs, Set<Examen> evalues) {
+    public Compte(String username, String fullname, String password, int talent, int entrainement, int chouchou,
+                  Long anciendepuis, Avatar avatar, Role role, Groupe groupe, Set<Combat> rouges, Set<Combat> blancs,
+                  Set<Combat> arbitres, Set<Examen> evaluateurs, Set<Examen> evalues) {
         this.username = username;
         this.fullname = fullname;
         this.password = password;
@@ -322,6 +324,18 @@ public class Compte implements UserDetails {
         return credits;
     }
 
+    public boolean isHonte(){
+        boolean isHonte = false;
+        long date = 0;
 
+        for(Examen exam : getEvalues()){
+            if(exam.getDate() > date) {
+                date = exam.getDate();
+                isHonte = !exam.aReussi;
+            }
+        }
+
+        return isHonte;
+    }
 
 }

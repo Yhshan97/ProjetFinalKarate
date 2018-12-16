@@ -29,7 +29,7 @@
 <body style="margin: 45px;">
 <div  class="container" >
     <h2> Informations Utilisateur </h2>
-
+<!--
     <img th:src="${avatar}" id="imgAvatarPrincipal">
 
     <span style="margin: 15px; font-size: 20px">
@@ -37,7 +37,7 @@
         <span th:text="${role}"></span>,
         <span th:text="ceinture + ' : ' + ${groupe}"></span>
     </span>
-
+-->
     <br/>
     <br/>
 
@@ -58,11 +58,11 @@
 
 <span><h3> Cliquer <a href="/notreEcole">ici</a> pour voir les membres de notre école. </h3></span>
 <br /><br />
-<span><h3> Cliquer <a href="/kumite">ici</a> pour accéder à la salle de kumite (identifié). </h3></span>
+<span><h3> Cliquer <a href="/combats">ici</a> pour accéder à la salle de kumite (identifié). </h3></span>
 <br /><br />
 <span><h3> Cliquer <a href="/grades">ici</a> pour accéder au passage de grades (sensei ou vénérable). </h3></span>
 
-
+<!--
     <br />
     <br />
     <div sec:authorize="isAuthenticated()">
@@ -88,6 +88,8 @@
         <ul id="reponsePublic" class="list-group">
         </ul>
     </div>
+    -->
+
 </div>
 </body>
 </html>
