@@ -36,6 +36,12 @@ $(function () {
             $("#avatarArbitre").attr("src",messageJSON.arbitreAvatar=== "null" ? "images/noprofile.jpeg" : messageJSON.arbitreAvatar);
             $("#avatarDroite").attr("src" ,messageJSON.droiteAvatar === "null" ? "images/noprofile.jpeg" : messageJSON.droiteAvatar);
 
+
+            $("#nomGauche").html(messageJSON.gaucheNom === "null" ? "<br/>" : messageJSON.gaucheNom);
+            $("#nomDroite").html(messageJSON.droiteNom === "null" ? "<br/>" : messageJSON.droiteNom);
+            $("#nomArbitre").html(messageJSON.arbitreNom === "null" ? "<br/>" : messageJSON.arbitreNom);
+
+
             $("#droiteAttaque, #gaucheAttaque").addClass("hidden");
             $("#droiteGagne,#gaucheGagne").addClass("hidden");
         });
@@ -45,20 +51,20 @@ $(function () {
 
             var jsonObj = JSON.parse(message.body);
 
-            $("#droiteAttaque").attr("src","/images/" + jsonObj.attaqueDroite + ".jpg");
-            $("#gaucheAttaque").attr("src","/images/" + jsonObj.attaqueGauche + ".jpg");
+            //Convert 0 to rock, 1 to paper, 2 to scissors
+            $("#droiteAttaque").attr("src","/images/" + returnAttaque(jsonObj.attaqueDroite) + ".jpg");
+            $("#gaucheAttaque").attr("src","/images/" + returnAttaque(jsonObj.attaqueGauche) + ".jpg");
 
             if(jsonObj.attaqueGauche === "aucun")
-                gaucheAttaque.removeClass("flipped");
-            else if(!gaucheAttaque.hasClass('flipped'))
-                gaucheAttaque.addClass("flipped");
+                $("#gaucheAttaque").removeClass("flipped");
+            else if(!$("#gaucheAttaque").hasClass('flipped'))
+                $("#gaucheAttaque").addClass("flipped");
 
-            //$("#gaucheGagne").removeClass("hidden");
-
-        })
+            $("#droiteAttaque, #gaucheAttaque").removeClass("hidden");
+        });
 
         stompClient.subscribe("/sujet/resultCombat", function(message){
-            var winner = JSON.parse(message.body).resultat;
+            var winner = JSON.parse(message.body).result;
 
             if(winner === "gauche"){
                 $("#gaucheGagne").removeClass("hidden");
@@ -66,10 +72,9 @@ $(function () {
             else if(winner === "droite"){
                 $("#droiteGagne").removeClass("hidden");
             }
-            else {
+            else if(winner === "draw"){
                 $("#droiteGagne,#gaucheGagne").removeClass("hidden");
             }
-
         });
 
         /*
@@ -151,5 +156,20 @@ $(function () {
 
             counter = 10;
         });*/
+
+
     });
 });
+
+function returnAttaque(nombre){
+    switch(nombre){
+        case 0:
+            return "roche";
+        case 1:
+            return "papier";
+        case 2:
+            return "ciseaux";
+        default:
+            return "aucun";
+    }
+}
