@@ -257,6 +257,10 @@ public class ControleurMVCRest {
                     sleep(2000);
                     //save fight and reset variables
                     resetCombatState();
+
+                    listeComptesWeb();
+                    listeComptes();
+
                     sleep(2000);
 
                 } catch (Exception e) {
@@ -358,8 +362,6 @@ public class ControleurMVCRest {
         Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
                 compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
         combatDao.saveAndFlush(combat);
-        listeComptesWeb();
-        listeComptes();
     }
 
     private void resetCombatState(){
