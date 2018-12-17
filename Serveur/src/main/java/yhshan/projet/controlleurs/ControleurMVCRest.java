@@ -93,6 +93,7 @@ public class ControleurMVCRest {
             }
         }
         this.template.convertAndSend("/sujet/lstLieux", lstPositions);
+
         return "{ comptes : [" + String.join(",", listeComptesJSON) + "] }";
     }
 
@@ -259,7 +260,8 @@ public class ControleurMVCRest {
                     resetCombatState();
 
                     listeComptesWeb();
-                    listeComptes();
+
+                    this.template.convertAndSend("/sujet/lstComptes",listeComptes());
 
                     sleep(2000);
 
@@ -362,6 +364,11 @@ public class ControleurMVCRest {
         Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
                 compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
         combatDao.saveAndFlush(combat);
+
+        compteDao.saveAndFlush(compteArbitre);
+        compteDao.saveAndFlush(compteDroite);
+        compteDao.saveAndFlush(compteGauche);
+
     }
 
     private void resetCombatState(){
