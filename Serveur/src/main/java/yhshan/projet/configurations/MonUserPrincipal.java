@@ -36,6 +36,8 @@ public class MonUserPrincipal implements UserDetails {
 
     public String getRole() { return compte.getRole().getRole();}
 
+    public int getRole2() { return compte.getRole().getId();}
+
     public String getGroupe(){ return compte.getGroupe().getGroupe(); }
 
     @Override

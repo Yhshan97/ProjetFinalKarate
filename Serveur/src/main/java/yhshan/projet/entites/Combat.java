@@ -134,8 +134,11 @@ public class Combat {
     public String toString() {
         return "Combat{" +
                 "id=" + id +
+                ", date=" + date +
                 ", pointsBlanc=" + pointsBlanc +
                 ", pointsRouge=" + pointsRouge +
+                ", groupeBlanc=" + getCeintureBlanc().getGroupe() +
+                ", groupeRouge=" + getCeintureRouge().getGroupe() +
                 '}';
     }
 }

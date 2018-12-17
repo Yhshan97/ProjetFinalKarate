@@ -239,7 +239,7 @@ public class Compte implements UserDetails {
                 '}';
     }
 
-    private int getPointsBasedOnEcart(int ecart){
+    public int getPointsBasedOnEcart(int ecart){
         int points = 0;
 
         switch(ecart){

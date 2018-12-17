@@ -22,6 +22,7 @@ import yhshan.projet.entites.Examen;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
+import java.lang.reflect.Array;
 import java.util.*;
 
 import static java.lang.Thread.currentThread;
@@ -283,11 +284,9 @@ public class ControleurMVCRest {
         gaucheAttaque = rand.nextInt(3);
         droiteAttaque = rand.nextInt(3);
 
-        String strJSONResultat =
-                "{ \"attaqueGauche\" : " + gaucheAttaque + "," + " \"attaqueDroite\" : " + droiteAttaque + "}";
+        String strJSONResultat = "{ \"attaqueGauche\" : " + gaucheAttaque + "," + " \"attaqueDroite\" : " + droiteAttaque + "}";
 
         this.template.convertAndSend("/sujet/ChoixCombat",strJSONResultat);
-
     }
 
 
@@ -364,11 +363,6 @@ public class ControleurMVCRest {
         Combat combat = new Combat(milli, compteArbitre, compteDroite, compteGauche, compteDroite.getGroupe(),
                 compteGauche.getGroupe(), ptsArbitre, ptsGaucheGain, ptsDroiteGain);
         combatDao.saveAndFlush(combat);
-
-        compteDao.saveAndFlush(compteArbitre);
-        compteDao.saveAndFlush(compteDroite);
-        compteDao.saveAndFlush(compteGauche);
-
     }
 
     private void resetCombatState(){
@@ -398,26 +392,101 @@ public class ControleurMVCRest {
 
     @RequestMapping(value = "/passer/{id}", method = RequestMethod.GET)
     public void passerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
-        Compte compteCourant = compteDao.getOne(id);
-        Compte evaluateur = compteDao.getOne(compteLogged.getUsername());
 
-        Long milli = new Date().getTime();
-        Examen exam = new Examen(milli, true, compteCourant.getGroupe(), evaluateur, compteCourant);
-        compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
-        examenDao.saveAndFlush(exam);
-        compteDao.saveAndFlush(compteCourant);
+        if(compteLogged != null && (compteLogged.getRole2() == 3 || compteLogged.getRole2() == 4)) {
+            Compte compteCourant = compteDao.getOne(id);
+            Compte evaluateur = compteDao.getOne(compteLogged.getUsername());
+
+            Long milli = new Date().getTime();
+            Examen exam = new Examen(milli, true, compteCourant.getGroupe(), evaluateur, compteCourant);
+            compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
+            examenDao.saveAndFlush(exam);
+            compteDao.saveAndFlush(compteCourant);
+        }
     }
 
     @RequestMapping(value = "/couler/{id}", method = RequestMethod.GET)
     public void coulerUtil(@PathVariable("id") String id,@AuthenticationPrincipal MonUserPrincipal compteLogged){
-        Compte compteCourant = compteDao.getOne(id);
-        Compte evaluateur = compteDao.getOne(compteLogged.getUsername());
 
-        Long milli = new Date().getTime();
-        Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
-        examenDao.saveAndFlush(exam);
-        compteDao.saveAndFlush(compteCourant);
+        if(compteLogged != null && (compteLogged.getRole2() == 3 || compteLogged.getRole2() == 4)) {
+            Compte compteCourant = compteDao.getOne(id);
+            Compte evaluateur = compteDao.getOne(compteLogged.getUsername());
+
+            Long milli = new Date().getTime();
+            Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
+            examenDao.saveAndFlush(exam);
+            compteDao.saveAndFlush(compteCourant);
+        }
     }
+
+
+    @RequestMapping(value = "/lstExamens/{courriel}/{sessionid}", method = RequestMethod.GET)
+    public LinkedHashMap<Examen,ArrayList<Combat>> historique(@PathVariable("courriel") String username,@PathVariable("sessionid") String sessionid){
+
+        if(listeDesConnexions.get(username) != null && listeDesConnexions.get(username).equals(sessionid)){
+            boolean compteExiste = compteDao.findById(username).isPresent();
+            if(!compteExiste) return null;
+
+            Compte compte = compteDao.findById(username).get();
+            LinkedHashMap<Examen,ArrayList<Combat>> lstExamens = new LinkedHashMap<>();
+
+            long dateStart = 0;
+            for(Examen exam : examenDao.findAllByEvalueOrderByDateAsc(compte)){
+
+                long dateStop = exam.getDate();
+
+                ArrayList<Combat> lstCombatsPourExamen = new ArrayList<>();
+
+                List<Combat> combatsByDate = combatDao.findAllByDateBetweenOrderByDateAsc(dateStart,dateStop);
+
+                System.out.println("-------------------------------------" + exam.getId() + "   "+ dateStart);
+
+                for (Combat combat: combatsByDate) {
+                    //If hes arbitre, rouge or blanc
+                    if(combat.getArbitre().getUsername().equals(username) || combat.getRouge().getUsername().equals(username) ||
+                        combat.getBlanc().getUsername().equals(username)){
+
+                        //Scale points based on group
+                        //Cote rouge
+                        if(combat.getPointsRouge() != 0){
+                            int ecart = combat.getCeintureBlanc().getId() - combat.getCeintureRouge().getId();
+                            int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                            if(combat.getPointsRouge() == 5) { // else divide by 2
+                                ptsGagne = ptsGagne >> 1;
+                            }
+                            combat.setPointsRouge(ptsGagne);
+                        }
+
+                        //Cote blanc
+                        if(combat.getPointsBlanc() != 0){
+                            int ecart = combat.getCeintureRouge().getId() - combat.getCeintureBlanc().getId();
+                            int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                            if(combat.getPointsBlanc() == 5) { // else divide by 2
+                                ptsGagne = ptsGagne >> 1;
+                            }
+                            combat.setPointsBlanc(ptsGagne);
+                        }
+
+                        System.out.println(combat.toString());
+                        lstCombatsPourExamen.add(combat);
+                    }
+                }
+                lstExamens.put(exam,lstCombatsPourExamen);
+
+                dateStart = dateStop;
+                System.out.println("-------------------------------------");
+                System.out.println("");
+                System.out.println("");
+            }
+
+            return lstExamens;
+        }
+
+        return null;
+    }
+
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////// to be deleted section
