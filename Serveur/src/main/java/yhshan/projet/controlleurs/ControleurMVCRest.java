@@ -404,6 +404,7 @@ public class ControleurMVCRest {
             compteCourant.setGroupe(groupeDao.getOne(compteCourant.getGroupe().getId() + 1));
             examenDao.saveAndFlush(exam);
             compteDao.saveAndFlush(compteCourant);
+            this.template.convertAndSend("/sujet/lstComptes",listeComptes());
         }
     }
 
@@ -418,6 +419,7 @@ public class ControleurMVCRest {
             Examen exam = new Examen(milli, false, compteCourant.getGroupe(), evaluateur, compteCourant);
             examenDao.saveAndFlush(exam);
             compteDao.saveAndFlush(compteCourant);
+            this.template.convertAndSend("/sujet/lstComptes",listeComptes());
         }
     }
 
