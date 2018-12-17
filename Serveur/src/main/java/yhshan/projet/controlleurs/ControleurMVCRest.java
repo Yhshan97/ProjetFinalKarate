@@ -461,7 +461,7 @@ public class ControleurMVCRest {
                 credits = 0;
 
                 tout += "\nCombats\n";
-                tout += String.format("|%s \t\t\t\t\t\t\t |%s\t|%s|%s\t\t|%s\t|%s\t|%s\t\t|%s\t|%s\t|\n",
+                tout += String.format("|%-25s|%-10s|%-7s|%-10s|%-10s|%-6s|%-10s|%-10s|%-6s|\n",
                         "Date",
                         "Arbitre",
                         "Crédits",
@@ -533,7 +533,7 @@ public class ControleurMVCRest {
                             combat.getRouge().getUsername().equals(username) ||
                             combat.getBlanc().getUsername().equals(username)) {
 
-                        tout += String.format("|%s \t\t\t |%s\t|%d\t\t|%s\t|%s\t\t|%d\t\t|%s\t|%s\t\t|%d\t\t|\n",
+                        tout += String.format("|%-25s|%-10s|%-7d|%-10s|%-10s|%-6d|%-10s|%-10s|%-6d|\n",
                                 df.format(new Date(combat.getDate())),          //Date
                                 combat.getArbitre().getUsername(),              //Arbitre
                                 combat.getCreditsArbitre(),                     //Credits

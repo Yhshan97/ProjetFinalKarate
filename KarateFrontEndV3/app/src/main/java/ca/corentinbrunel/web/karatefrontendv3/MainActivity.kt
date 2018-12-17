@@ -205,6 +205,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         waitingRoomFragment.stompConnection = stompConnection
         waitingRoomFragment.httpConnection = httpConnection
         waitingRoomFragment.accounts = accounts
+        historyFragment.httpConnection = httpConnection
 
         updateLstAccounts(false, true)
 
@@ -228,7 +229,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_connection -> connectionFragment
             R.id.nav_messages -> messagesFragment
             R.id.nav_waiting_room -> waitingRoomFragment
-            R.id.nav_history -> historyFragment
+            R.id.nav_history -> {
+                //historyFragment.onShow()
+                historyFragment
+            }
             else -> null
         }
 
@@ -261,10 +265,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 historyFragment.current = newCurrent
                 messagesFragment.current = newCurrent
                 historyFragment.current = newCurrent
+                historyFragment.onShow()
 
-                nav_view.menu.findItem(R.id.nav_history).isEnabled = true
+                this@MainActivity.runOnUiThread {
+                    nav_view.menu.findItem(R.id.nav_history).isEnabled = true
 
-                this@MainActivity.runOnUiThread { updateInfoAccount() }
+                    updateInfoAccount()
+                }
             }
         )
 
@@ -284,9 +291,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 messagesFragment.current = null
                 historyFragment.current = null
 
-                nav_view.menu.findItem(R.id.nav_history).isEnabled = false
-
                 this@MainActivity.runOnUiThread {
+                    nav_view.menu.findItem(R.id.nav_history).isEnabled = false
+
                     resetInfoAccount()
                     messagesFragment.resetMessages()
                 }
