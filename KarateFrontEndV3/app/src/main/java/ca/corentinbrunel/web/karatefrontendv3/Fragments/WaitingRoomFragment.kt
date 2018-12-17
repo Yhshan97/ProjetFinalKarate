@@ -35,6 +35,8 @@ class WaitingRoomFragment : Fragment() {
     private lateinit var helperSpectating: RecyclerViewHelper
     private lateinit var helperWaiting: RecyclerViewHelper
 
+    private var oldPosition = ""
+
     fun updateRecyclerViews() {
         helperArbitrators.clear()
         helperElsewhere.clear()
@@ -62,23 +64,6 @@ class WaitingRoomFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_waiting_room, container, false)
-    }
-
-    private fun simpleStompCurrent(dest: String) {
-        val curAcc = current
-        if (curAcc != null)
-            httpConnection.executeRequest(
-                "http://10.0.2.2:8080/$dest/${curAcc.email}/${curAcc.sessionId}",
-                { _, _ -> activity?.runOnUiThread { Toast.makeText(activity, "$dest impossible", Toast.LENGTH_SHORT).show() }},
-                { _, response ->
-                    activity?.runOnUiThread {
-                        Toast.makeText(activity, "$dest: ${response.body()?.string()}", Toast.LENGTH_SHORT).show()
-                    }
-
-                    if (dest == "examen1")
-                        stompConnection.sendGetLstComptes()
-                }
-            )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -215,11 +200,18 @@ class WaitingRoomFragment : Fragment() {
          * Buttons and click events
          */
         cbArbitrator.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked)
+            if (isChecked) {
+                oldPosition = when {
+                    rbElsewhere.isChecked -> "ailleurs"
+                    rbSpectator.isChecked -> "spectateur"
+                    rbWaiting.isChecked -> "attente"
+                    else -> "attente"
+                }
                 stompConnection.sendChangePlace(current, "attente", true)
+            }
             else {
-                stompConnection.sendChangePlace(current, "attente", false)
-                rbWaiting.isChecked = true
+                stompConnection.sendChangePlace(current, oldPosition, false)
+                //rbWaiting.isChecked = true
             }
         }
 
@@ -231,41 +223,6 @@ class WaitingRoomFragment : Fragment() {
                 R.id.rbWaiting -> stompConnection.sendChangePlace(current, "attente", false)
             }
         }
-
-        /*
-        btnFightRed.setOnClickListener {
-            Log.i("Fight", "Red fight")
-            simpleStompCurrent("combat1")
-        }
-        btnFightWhite.setOnClickListener {
-            Log.i("Fight", "White fight")
-            simpleStompCurrent("combat2")
-        }
-        btnFightTie.setOnClickListener {
-            Log.i("Fight", "White fight")
-            simpleStompCurrent("combat3")
-        }
-        btnArbiterRed.setOnClickListener {
-            Log.i("Arbiter", "Arbiter red")
-            simpleStompCurrent("arbitrer1")
-        }
-        btnArbiterRedFault.setOnClickListener {
-            Log.i("Arbitrer", "Arbiter red with fault")
-            simpleStompCurrent("arbitrer2")
-        }
-        btnPassExam.setOnClickListener {
-            Log.i("Exam", "Pass exam")
-            simpleStompCurrent("examen1")
-        }
-        btnFailExam.setOnClickListener {
-            Log.i("Exam", "Fail exam")
-            simpleStompCurrent("examen2")
-        }
-        btnChangeRole.setOnClickListener {
-            Log.i("Role", "Change role")
-            simpleStompCurrent("passage")
-        }
-        */
 
         isInit = true
     }

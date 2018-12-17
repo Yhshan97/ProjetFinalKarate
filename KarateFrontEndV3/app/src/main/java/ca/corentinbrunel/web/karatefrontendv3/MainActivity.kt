@@ -230,7 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_messages -> messagesFragment
             R.id.nav_waiting_room -> waitingRoomFragment
             R.id.nav_history -> {
-                //historyFragment.onShow()
+                historyFragment.onShow()
                 historyFragment
             }
             else -> null
@@ -265,7 +265,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 historyFragment.current = newCurrent
                 messagesFragment.current = newCurrent
                 historyFragment.current = newCurrent
-                historyFragment.onShow()
+                //historyFragment.onShow()
 
                 this@MainActivity.runOnUiThread {
                     nav_view.menu.findItem(R.id.nav_history).isEnabled = true
