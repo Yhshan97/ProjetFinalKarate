@@ -5,6 +5,7 @@
     <string name="connection">Connexion</string>
     <string name="messages">Messages</string>
     <string name="waiting_room">Salle d\'attente</string>
+    <string name="history_fight">Historique des combats</string>
     <string name="connection_open">Établir la connexion</string>
     <string name="connection_close">Terminer la connexion</string>
     <string name="fighter_info">Informations sur le combattant</string>
@@ -28,4 +29,8 @@
     <string name="exam_fail">Couler examen</string>
     <string name="change_role">Changer role</string>
     <string name="anonymous">Anonyme</string>
+
+    <string name="rock">Roche</string>
+    <string name="paper">Papier</string>
+    <string name="scissors">Ciseaux</string>
 </resources>

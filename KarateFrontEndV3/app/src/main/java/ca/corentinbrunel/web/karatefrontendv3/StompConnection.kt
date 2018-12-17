@@ -22,25 +22,21 @@ class StompConnection(url:String) {
         val dis = client.topic(destination).subscribe(event)
     }
 
-    fun subReponsePublique(event:Consumer<StompMessage>) {
-        subTopic("/sujet/reponsepublique", event)
-    }
+    fun subReponsePublique(event:Consumer<StompMessage>) = subTopic("/sujet/reponsepublique", event)
 
-    fun subReponsePrive(event:Consumer<StompMessage>) {
-        subTopic("/sujet/reponseprive", event)
-    }
+    fun subReponsePrive(event:Consumer<StompMessage>) = subTopic("/sujet/reponseprive", event)
 
-    fun subChangePlace(event:Consumer<StompMessage>) {
-        subTopic("/sujet/lstLieux", event)
-    }
+    fun subChangePlace(event:Consumer<StompMessage>) = subTopic("/sujet/lstLieux", event)
 
-    fun subMAJCompte(event:Consumer<StompMessage>) {
-        subTopic("/sujet/MAJCompte", event)
-    }
+    fun subMAJCompte(event:Consumer<StompMessage>) = subTopic("/sujet/MAJCompte", event)
 
-    fun subLstComptes(event:Consumer<StompMessage>) {
-        subTopic("/sujet/lstComptes", event)
-    }
+    fun subLstComptes(event:Consumer<StompMessage>) = subTopic("/sujet/lstComptes", event)
+
+    fun subInfoCombat(event: Consumer<StompMessage>) = subTopic("/sujet/infoCombat", event)
+
+    fun subAttacks(event: Consumer<StompMessage>) = subTopic("/sujet/ChoixCombat", event)
+
+    fun subResultFight(event: Consumer<StompMessage>) = subTopic("/sujet/resultCombat", event)
 
     /*
      * Send

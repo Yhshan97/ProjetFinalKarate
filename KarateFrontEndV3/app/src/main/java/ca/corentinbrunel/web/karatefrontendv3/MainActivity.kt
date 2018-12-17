@@ -14,6 +14,7 @@ import android.view.MenuItem
 import android.widget.Toast
 import ca.corentinbrunel.web.karatefrontendv3.Entities.Account
 import ca.corentinbrunel.web.karatefrontendv3.Fragments.ConnectionFragment
+import ca.corentinbrunel.web.karatefrontendv3.Fragments.HistoryFragment
 import ca.corentinbrunel.web.karatefrontendv3.Fragments.MessagesFragment
 import ca.corentinbrunel.web.karatefrontendv3.Fragments.WaitingRoomFragment
 import io.reactivex.functions.Consumer
@@ -33,8 +34,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private var current: Account? = null
     private lateinit var currentFragment: Fragment
     private lateinit var connectionFragment: ConnectionFragment
-    private val messagesFragment: MessagesFragment = MessagesFragment()
-    private val waitingRoomFragment: WaitingRoomFragment = WaitingRoomFragment()
+    private val messagesFragment = MessagesFragment()
+    private val waitingRoomFragment = WaitingRoomFragment()
+    private val historyFragment = HistoryFragment()
 
     /*
      * Helper functions
@@ -140,8 +142,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             ft.add(R.id.frame_content, connectionFragment)
                             ft.add(R.id.frame_content, messagesFragment)
                             ft.add(R.id.frame_content, waitingRoomFragment)
+                            ft.add(R.id.frame_content, historyFragment)
                             ft.hide(messagesFragment)
                             ft.hide(waitingRoomFragment)
+                            ft.hide(historyFragment)
 
                             ft.commit()
                         }
@@ -201,11 +205,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         waitingRoomFragment.stompConnection = stompConnection
         waitingRoomFragment.httpConnection = httpConnection
         waitingRoomFragment.accounts = accounts
-        waitingRoomFragment.current = current
 
         updateLstAccounts(false, true)
 
-        stompConnection.subMAJCompte(Consumer { updateAccountsStomp(it.payload) })
         stompConnection.subLstComptes(Consumer { updateAccountsStomp(it.payload) })
     }
 
@@ -224,13 +226,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Handle navigation view item clicks here.
         val fragment: Fragment? = when (item.itemId) {
             R.id.nav_connection -> connectionFragment
-            R.id.nav_messages -> {
-                messagesFragment.current = current
-                messagesFragment
-            }
-            R.id.nav_waiting_room -> {
-                waitingRoomFragment
-            }
+            R.id.nav_messages -> messagesFragment
+            R.id.nav_waiting_room -> waitingRoomFragment
+            R.id.nav_history -> historyFragment
             else -> null
         }
 
@@ -259,7 +257,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
                 current = newCurrent
 
-                waitingRoomFragment.current = current
+                waitingRoomFragment.current = newCurrent
+                historyFragment.current = newCurrent
+                messagesFragment.current = newCurrent
+                historyFragment.current = newCurrent
+
+                nav_view.menu.findItem(R.id.nav_history).isEnabled = true
 
                 this@MainActivity.runOnUiThread { updateInfoAccount() }
             }
@@ -275,7 +278,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             { _, _ -> this@MainActivity.runOnUiThread { Toast.makeText(applicationContext, "Le compte n'a pas pu être déconnecté", Toast.LENGTH_SHORT).show() }},
             { _, _ ->
                 current = null
-                waitingRoomFragment.current = current
+
+                waitingRoomFragment.current = null
+                historyFragment.current = null
+                messagesFragment.current = null
+                historyFragment.current = null
+
+                nav_view.menu.findItem(R.id.nav_history).isEnabled = false
+
                 this@MainActivity.runOnUiThread {
                     resetInfoAccount()
                     messagesFragment.resetMessages()

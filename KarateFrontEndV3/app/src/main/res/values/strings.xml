@@ -10,6 +10,7 @@
     <string name="connection">Connection</string>
     <string name="messages">Messages</string>
     <string name="waiting_room">Waiting room</string>
+    <string name="history_fight">Fight history</string>
     <string name="connection_open">Open connection</string>
     <string name="connection_close">Close connection</string>
     <string name="fighter_info">Fighter information</string>
@@ -34,6 +35,7 @@
     <string name="change_role">Change role</string>
     <string name="anonymous">Anonymous</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="rock">Rock</string>
+    <string name="paper">Paper</string>
+    <string name="scissors">Scissors</string>
 </resources>
