@@ -23,6 +23,8 @@ import javax.persistence.EntityManager;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
 import java.lang.reflect.Array;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.lang.Thread.currentThread;
@@ -421,7 +423,7 @@ public class ControleurMVCRest {
 
 
     @RequestMapping(value = "/lstExamens/{courriel}/{sessionid}", method = RequestMethod.GET)
-    public LinkedHashMap<Examen,ArrayList<Combat>> historique(@PathVariable("courriel") String username,@PathVariable("sessionid") String sessionid){
+    public String historique(@PathVariable("courriel") String username,@PathVariable("sessionid") String sessionid){
 
         if(listeDesConnexions.get(username) != null && listeDesConnexions.get(username).equals(sessionid)){
             boolean compteExiste = compteDao.findById(username).isPresent();
@@ -429,6 +431,15 @@ public class ControleurMVCRest {
 
             Compte compte = compteDao.findById(username).get();
             LinkedHashMap<Examen,ArrayList<Combat>> lstExamens = new LinkedHashMap<>();
+
+            Date ancienDepuis = new Date(compte.getAnciendepuis());
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            String tout = String.format("Historique du membre : %s ANCIEN : %s \n",username,df.format(ancienDepuis));
+
+
+            int points = 0;
+            int credits = 0;
 
             long dateStart = 0;
             for(Examen exam : examenDao.findAllByEvalueOrderByDateAsc(compte)){
@@ -439,49 +450,113 @@ public class ControleurMVCRest {
 
                 List<Combat> combatsByDate = combatDao.findAllByDateBetweenOrderByDateAsc(dateStart,dateStop);
 
-                System.out.println("-------------------------------------" + exam.getId() + "   "+ dateStart);
+                tout += String.format("\nExamen : %s, Points : %d, Crédits : %d, Ceinture %s ,Réussi : %s \n",
+                        df.format(new Date(exam.getDate())),
+                        points,
+                        credits,
+                        exam.getEvalue().getGroupe().getGroupe(),
+                        exam.getaReussi().toString());
+
+                points = 0;
+                credits = 0;
+
+                tout += "\nCombats\n";
+                tout += String.format("|%s \t\t\t\t\t\t\t |%s\t|%s|%s\t\t|%s\t|%s\t|%s\t\t|%s\t|%s\t|\n",
+                        "Date",
+                        "Arbitre",
+                        "Crédits",
+                        "Rouge",
+                        "Ceinture",
+                        "Points",
+                        "Blanc",
+                        "Ceinture",
+                        "Points"
+                        );
 
                 for (Combat combat: combatsByDate) {
-                    //If hes arbitre, rouge or blanc
-                    if(combat.getArbitre().getUsername().equals(username) || combat.getRouge().getUsername().equals(username) ||
-                        combat.getBlanc().getUsername().equals(username)){
+                    //If hes arbitre
+                    if(combat.getArbitre().getUsername().equals(username)){
+                        credits += combat.getCreditsArbitre();
+                    }
 
-                        //Scale points based on group
-                        //Cote rouge
-                        if(combat.getPointsRouge() != 0){
-                            int ecart = combat.getCeintureBlanc().getId() - combat.getCeintureRouge().getId();
-                            int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+                    //Scale points based on group
+                    //Cote rouge
+                    if(combat.getRouge().getUsername().equals(username) && combat.getPointsRouge() != 0) {
+                        int ecart = combat.getCeintureBlanc().getId() - combat.getCeintureRouge().getId();
+                        int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
 
-                            if(combat.getPointsRouge() == 5) { // else divide by 2
-                                ptsGagne = ptsGagne >> 1;
-                            }
-                            combat.setPointsRouge(ptsGagne);
+                        if (combat.getPointsRouge() == 5) { // else divide by 2
+                            ptsGagne = ptsGagne >> 1;
                         }
+                        combat.setPointsRouge(ptsGagne);
+                        points += ptsGagne;
+                    }
 
-                        //Cote blanc
-                        if(combat.getPointsBlanc() != 0){
-                            int ecart = combat.getCeintureRouge().getId() - combat.getCeintureBlanc().getId();
-                            int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+                    //Cote blanc
 
-                            if(combat.getPointsBlanc() == 5) { // else divide by 2
-                                ptsGagne = ptsGagne >> 1;
-                            }
-                            combat.setPointsBlanc(ptsGagne);
+                    if(combat.getBlanc().getUsername().equals(username) && combat.getPointsBlanc() != 0){
+                        int ecart = combat.getCeintureRouge().getId() - combat.getCeintureBlanc().getId();
+                        int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                        if(combat.getPointsBlanc() == 5) { // else divide by 2
+                            ptsGagne = ptsGagne >> 1;
                         }
+                        combat.setPointsBlanc(ptsGagne);
+                        points += ptsGagne;
+                    }
 
-                        System.out.println(combat.toString());
+                    if(combat.getPointsRouge() != 0) {
+                        int ecart = combat.getCeintureBlanc().getId() - combat.getCeintureRouge().getId();
+                        int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                        if (combat.getPointsRouge() == 5) { // else divide by 2
+                            ptsGagne = ptsGagne >> 1;
+                        }
+                        combat.setPointsRouge(ptsGagne);
+                    }
+
+                    //Cote blanc
+
+                    if( combat.getPointsBlanc() != 0){
+                        int ecart = combat.getCeintureRouge().getId() - combat.getCeintureBlanc().getId();
+                        int ptsGagne = compte.getPointsBasedOnEcart(ecart); // assumes he wins 10 pts
+
+                        if(combat.getPointsBlanc() == 5) { // else divide by 2
+                            ptsGagne = ptsGagne >> 1;
+                        }
+                        combat.setPointsBlanc(ptsGagne);
+                    }
+
+
+
+                    if(combat.getArbitre().getUsername().equals(username) ||
+                            combat.getRouge().getUsername().equals(username) ||
+                            combat.getBlanc().getUsername().equals(username)) {
+
+                        tout += String.format("|%s \t\t\t |%s\t|%d\t\t|%s\t|%s\t\t|%d\t\t|%s\t|%s\t\t|%d\t\t|\n",
+                                df.format(new Date(combat.getDate())),          //Date
+                                combat.getArbitre().getUsername(),              //Arbitre
+                                combat.getCreditsArbitre(),                     //Credits
+                                combat.getRouge().getUsername(),                //Rouge
+                                combat.getRouge().getGroupe().getGroupe(),      //Ceinture
+                                combat.getPointsRouge(),                        //Points
+                                combat.getBlanc().getUsername(),                //Blanc
+                                combat.getBlanc().getGroupe().getGroupe(),      //Ceinture
+                                combat.getPointsBlanc()                         //Points
+                                );
+
+
                         lstCombatsPourExamen.add(combat);
                     }
+
                 }
                 lstExamens.put(exam,lstCombatsPourExamen);
 
                 dateStart = dateStop;
-                System.out.println("-------------------------------------");
-                System.out.println("");
-                System.out.println("");
-            }
 
-            return lstExamens;
+            }
+            System.out.println(tout);
+            return tout;
         }
 
         return null;
