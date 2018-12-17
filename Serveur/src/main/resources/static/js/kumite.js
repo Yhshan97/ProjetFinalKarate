@@ -36,7 +36,6 @@ $(function () {
             $("#avatarArbitre").attr("src",messageJSON.arbitreAvatar=== "null" ? "images/noprofile.jpeg" : messageJSON.arbitreAvatar);
             $("#avatarDroite").attr("src" ,messageJSON.droiteAvatar === "null" ? "images/noprofile.jpeg" : messageJSON.droiteAvatar);
 
-
             $("#nomGauche").html(messageJSON.gaucheNom === "null" ? "<br/>" : messageJSON.gaucheNom);
             $("#nomDroite").html(messageJSON.droiteNom === "null" ? "<br/>" : messageJSON.droiteNom);
             $("#nomArbitre").html(messageJSON.arbitreNom === "null" ? "<br/>" : messageJSON.arbitreNom);

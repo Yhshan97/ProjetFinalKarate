@@ -180,7 +180,7 @@ public class ControleurMVCRest {
         }
 
         this.template.convertAndSend("/sujet/lstLieux", lstPositions);
-
+        listeComptesWeb();
         return logout ? "Logout OK" : "Déjà logged out";
     }
 
@@ -423,13 +423,15 @@ public class ControleurMVCRest {
 
 
         lstPositions.put("b14@dojo","spectateur");
-        lstPositions.put("v1@dojo","arbitre");
-        lstPositions.put("b39@dojo","attente");
-        lstPositions.put("b6@dojo","attente");
-        lstPositions.put("b18@dojo","attente");
+        lstPositions.put("v1@dojo","spectateur");
+        lstPositions.put("b39@dojo","spectateur");
+        lstPositions.put("b6@dojo","spectateur");
+        lstPositions.put("b18@dojo","spectateur");
         lstPositions.put("b16@dojo","spectateur");
-        lstPositions.put("b31@dojo","arbitre");
-        lstPositions.put("b21@dojo","attente");
+        lstPositions.put("b31@dojo","spectateur");
+        lstPositions.put("b21@dojo","spectateur");
+        lstPositions.put("b24@dojo","spectateur");
+        lstPositions.put("b23@dojo","spectateur");
         combatLoop();
         System.out.println(lstPositions.toString());
         return null;
